@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        main {
+            height: 100vh;
+            background-color: darkcyan;
+            display: grid;
+            place-items: center;
+        }
+
+        section {
+            width: 500px;
+            position: relative;
+            aspect-ratio: 1;
+        }
+
+        section div {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 5px;
+            height: 255px;
+            background-color: white;
+            transform-origin: bottom center;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section>
+        </section>
+    </main>
+
+    <script>
+        const num_of_bars = 180;
+        const container = document.querySelector("section");
+        let allDiv = "<div style='transform: rotateZ(0deg)'></div>";
+        for (let i = 1; i <= num_of_bars; i++) {
+            allDiv += `<div style="transform: rotateZ(${i}deg);" id="bar_${i}"></div>`;
+        }
+        for (let i = 1; i <= num_of_bars; i++) {
+            allDiv += `<div style="transform: rotateZ(-${i}deg); height: 100px" id="bar_${i}n"></div>`;
+        }
+        container.innerHTML = allDiv;
+    </script>
+</body>
+
+</html>
