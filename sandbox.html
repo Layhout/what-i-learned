@@ -54,7 +54,7 @@
         .visualizer-container__bar {
 
             display: inline-block;
-            background: white;
+            background: red;
             margin: 0 2px;
             width: 25px;
 
@@ -65,20 +65,33 @@
 
 <body>
 
-    <audio src="track.mp3" controls></audio>
 
-    <div class="background"></div>
+    <!-- <div class="background"></div> -->
 
     <div class="track-title">Awesome song</div>
 
     <div class="visualizer-container"></div>
+    <audio src="public/in_the_mood.mp3" controls></audio>
+    <button onclick="play()">play</button>
 
     <script>
+        // Get the visualizer container
+        const visualizerContainer = document.querySelector(".visualizer-container");
+        // The number of bars that should be displayed
+        const NBR_OF_BARS = 50;
 
-        (function () {
+        // Create a set of pre-defined bars
+        for (let i = 0; i < NBR_OF_BARS; i++) {
 
-            // The number of bars that should be displayed
-            const NBR_OF_BARS = 50;
+            const bar = document.createElement("DIV");
+            bar.setAttribute("id", "bar" + i);
+            bar.setAttribute("class", "visualizer-container__bar");
+            visualizerContainer.appendChild(bar);
+
+        }
+        function play() {
+
+
 
             // Get the audio element tag
             const audio = document.querySelector("audio");
@@ -101,18 +114,9 @@
             analayzer.getByteFrequencyData(frequencyData);
             console.log("frequencyData", frequencyData);
 
-            // Get the visualizer container
-            const visualizerContainer = document.querySelector(".visualizer-container");
 
-            // Create a set of pre-defined bars
-            for (let i = 0; i < NBR_OF_BARS; i++) {
 
-                const bar = document.createElement("DIV");
-                bar.setAttribute("id", "bar" + i);
-                bar.setAttribute("class", "visualizer-container__bar");
-                visualizerContainer.appendChild(bar);
 
-            }
 
             // This function has the task to adjust the bar heights according to the frequency data
             function renderFrame() {
@@ -148,10 +152,10 @@
 
             renderFrame();
 
-            audio.volume = 0.10;
+            // audio.volume = 0.10;
             audio.play();
 
-        })();
+        };
 
     </script>
 

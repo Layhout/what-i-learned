@@ -44,7 +44,10 @@
         </section>
     </main>
 
+    <audio src="/public/in_the_mood.mp3" controls></audio>
+
     <script>
+        const audio = document.querySelector("audio");
         const num_of_bars = 180;
         const container = document.querySelector("section");
         let allDiv = "<div style='transform: rotateZ(0deg)'></div>";
@@ -52,9 +55,26 @@
             allDiv += `<div style="transform: rotateZ(${i}deg);" id="bar_${i}"></div>`;
         }
         for (let i = 1; i <= num_of_bars; i++) {
-            allDiv += `<div style="transform: rotateZ(-${i}deg); height: 100px" id="bar_${i}n"></div>`;
+            allDiv += `<div style="transform: rotateZ(-${i}deg);" id="bar_${i}n"></div>`;
         }
         container.innerHTML = allDiv;
+
+        const ctx = new AudioContext();
+        const audioSource = ctx.createMediaElementSource(audio);
+        const analayzer = ctx.createAnalyser();
+        audioSource.connect(analayzer);
+        analayzer.connect(ctx.destination);
+        analayzer.fftSize = 64;
+        const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
+        analayzer.getByteFrequencyData(frequencyData);
+        console.log("frequencyData", frequencyData);
+
+        // const renderFrame=_=> {
+        //     analayzer.getByteFrequencyData(frequencyData);
+        //     for(let i=0; i<num_of_bars; i++){
+        //         const index
+        //     }
+        // }
     </script>
 </body>
 
