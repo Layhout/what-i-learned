@@ -16,117 +16,170 @@
         main {
             height: 100vh;
             background-color: darkcyan;
-            position: relative;
+            display: grid;
+            place-items: center;
         }
 
         section {
-            width: 200px;
-            height: 200px;
+            /* animation: text_visible 1s ease; */
+            animation: shaking 8s ease infinite;
+            position: relative;
+        }
+
+        /* section::after {
+            content: "";
             position: absolute;
-            transition: all .1s ease;
-            transform: translate(-50%, -50%);
-            top: 50%;
-            left: 50%;
-            /* display: none; */
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background-color: darkgoldenrod;
+            animation: e3 2s ease forwards;
+        } */
+
+        section div {
+            color: white;
+            text-align: center;
+            font-size: 2rem;
+            text-transform: uppercase;
+            /* animation: shaking 8s ease infinite; */
+            /* opacity: 0;
+            animation: text_visible 0.0001s ease 1s forwards; */
+            animation: e1 2s ease forwards;
         }
 
-        section .bar_container {
-            position: absolute;
-            bottom: 50%;
-            left: 0;
-            width: 100%;
-            transform-origin: bottom center;
-            display: flex;
-            /* justify-content: space-between; */
-            align-items: flex-end;
+        section div p {
+            animation: blur_out 2s ease 5s forwards;
         }
 
-        section .bar_container._1 {
-            transform: translateY(-100px);
+        @keyframes blur_out {
+            0% {
+                filter: blur(0);
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            70% {
+                opacity: 0;
+            }
+
+            100% {
+                filter: blur(10px);
+                opacity: 0;
+                transform: scale(2);
+            }
         }
 
-        section .bar_container._2 {
-            transform: rotateZ(90deg) translateY(-100px);
+        @keyframes shaking {
+            0% {
+                transform: translate(2px, 2px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-2px, -3px) rotate(-2deg);
+            }
+
+            20% {
+                transform: translate(-4px, 1px) rotate(2deg);
+            }
+
+            30% {
+                transform: translate(4px, 3px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(2px, -2px) rotate(2deg);
+            }
+
+            50% {
+                transform: translate(-2px, 3px) rotate(-2deg);
+            }
+
+            60% {
+                transform: translate(-4px, 2px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(4px, 2px) rotate(-2deg);
+            }
+
+            80% {
+                transform: translate(-2px, -2px) rotate(2deg);
+            }
+
+            90% {
+                transform: translate(2px, 3px) rotate(-2deg);
+            }
+
+            100% {
+                transform: translate(2px, 2px) rotate(0deg);
+            }
         }
 
-        section .bar_container._3 {
-            transform: rotateZ(180deg) translateY(-100px);
+        @keyframes text_visible {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        section .bar_container._4 {
-            transform: rotateZ(270deg) translateY(-100px);
+        @keyframes e1 {
+            from {
+                transform: translateX(-50%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        section .bar_container .bar {
-            width: 3px;
-            height: 1px;
-            background-color: white;
-            margin-right: 1px;
+        @keyframes e2 {
+            from {
+                transform: scale(0.5);
+                filter: blur(10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                filter: blur(0);
+                opacity: 1;
+            }
         }
 
-        section .bar_container .bar:last-child {
-            margin: 0;
+        @keyframes e3 {
+            0% {
+                left: 0;
+                width: 0%;
+            }
+
+            50% {
+                left: 0;
+                width: 100%;
+            }
+
+            100% {
+                left: 100%;
+                width: 0%;
+            }
         }
     </style>
 </head>
 
 <body>
     <main>
-        <button onclick="play()">play</button>
         <section>
-            <div class="bar_container _1"></div>
-            <div class="bar_container _2"></div>
-            <div class="bar_container _3"></div>
-            <div class="bar_container _4"></div>
+            <div>
+                <p>we got ups and downs</p>
+                <p>i cannot lie.</p>
+            </div>
         </section>
     </main>
-
-    <audio src="public/in_the_mood.mp3" id="audio_for_visual"></audio>
-    <audio src="public/in_the_mood.mp3" id="audio_for_sound"></audio>
-
-    <script>
-        const av = document.querySelector("#audio_for_visual");
-        const as = document.querySelector("#audio_for_sound");
-        const wrapper = document.querySelector("section");
-        const barContainers = document.querySelectorAll(".bar_container");
-        const num_of_bars = 50;
-        let allDiv = "";
-        for (let i = 0; i < num_of_bars; i++) {
-            allDiv += `<div class="bar _${i}"></div>`;
-        }
-        barContainers.forEach(bc => {
-            bc.innerHTML = allDiv;
-        })
-
-        const play = _ => {
-            const ctx = new AudioContext();
-            const audioSource = ctx.createMediaElementSource(av);
-            const analyzer = ctx.createAnalyser();
-            audioSource.connect(analyzer);
-            analyzer.connect(ctx.destination);
-            analyzer.fftSize = 128;
-            const frequencyData = new Uint8Array(analyzer.frequencyBinCount);
-            analyzer.getByteFrequencyData(frequencyData);
-            console.log("frequencyData", frequencyData);
-
-            const renderFrame = _ => {
-                analyzer.getByteFrequencyData(frequencyData);
-                for (let i = 0; i <= num_of_bars; i++) {
-                    const fd = frequencyData[i];
-                    const bars = document.querySelectorAll(".bar._" + i);
-                    if (!bars) continue;
-                    const barHeight = Math.max(1, fd * 0.3 || 0);
-                    bars.forEach(b => { b.style.height = barHeight + "px" });
-                }
-                wrapper.style.transform = `translate(-50%, -50%) scale(${Math.min(1.5, Math.max(1, frequencyData[1] * 0.006))})`;
-                window.requestAnimationFrame(renderFrame);
-            }
-            renderFrame();
-            av.volume = 0.1;
-            av.play();
-            as.play();
-        }
-    </script>
 </body>
 
 </html>
