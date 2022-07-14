@@ -1,164 +1,45 @@
-<!-- License MIT, Author Special Agent Squeaky (specialagentsqueaky.com) -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>My Eq</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 
     <style>
-        body {
-            overflow: hidden;
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
         }
 
-        .background {
-            position: absolute;
-
-            top: -50px;
-            right: -50px;
-            bottom: -50px;
-            left: -50px;
-
-            background-image: url("background.jpg");
-            background-position: center center;
-            background-size: cover;
-
-            filter: blur(15px);
-
+        main {
+            height: 100vh;
+            display: grid;
+            place-content: center;
         }
 
-        .track-title {
-
-            position: absolute;
-
-            top: 200px;
-            right: 0;
-            left: 0;
-
-            color: white;
-            font-family: Calibri;
-            font-size: 100px;
-            text-align: center;
-
+        section {
+            width: 100px;
+            height: 100px;
         }
 
-        .visualizer-container {
-            position: absolute;
-
-            bottom: 450px;
-            right: 0;
-            left: 0;
-
-            text-align: center;
+        ._1 {
+            background-color: red;
         }
 
-        .visualizer-container__bar {
-
-            display: inline-block;
-            background: red;
-            margin: 0 2px;
-            width: 25px;
-
+        ._2 {
+            background-color: orange;
         }
     </style>
-
 </head>
 
 <body>
-
-
-    <!-- <div class="background"></div> -->
-
-    <div class="track-title">Awesome song</div>
-
-    <div class="visualizer-container"></div>
-    <audio src="public/in_the_mood.mp3" controls></audio>
-    <button onclick="play()">play</button>
-
-    <script>
-        // Get the visualizer container
-        const visualizerContainer = document.querySelector(".visualizer-container");
-        // The number of bars that should be displayed
-        const NBR_OF_BARS = 50;
-
-        // Create a set of pre-defined bars
-        for (let i = 0; i < NBR_OF_BARS; i++) {
-
-            const bar = document.createElement("DIV");
-            bar.setAttribute("id", "bar" + i);
-            bar.setAttribute("class", "visualizer-container__bar");
-            visualizerContainer.appendChild(bar);
-
-        }
-        function play() {
-
-
-
-            // Get the audio element tag
-            const audio = document.querySelector("audio");
-
-            // Create an audio context
-            const ctx = new AudioContext();
-
-            // Create an audio source
-            const audioSource = ctx.createMediaElementSource(audio);
-
-            // Create an audio analyzer
-            const analayzer = ctx.createAnalyser();
-
-            // Connect the source, to the analyzer, and then back the the context's destination
-            audioSource.connect(analayzer);
-            audioSource.connect(ctx.destination);
-
-            // Print the analyze frequencies
-            const frequencyData = new Uint8Array(analayzer.frequencyBinCount);
-            analayzer.getByteFrequencyData(frequencyData);
-            console.log("frequencyData", frequencyData);
-
-
-
-
-
-            // This function has the task to adjust the bar heights according to the frequency data
-            function renderFrame() {
-
-                // Update our frequency data array with the latest frequency data
-                analayzer.getByteFrequencyData(frequencyData);
-
-                for (let i = 0; i < NBR_OF_BARS; i++) {
-
-                    // Since the frequency data array is 1024 in length, we don't want to fetch
-                    // the first NBR_OF_BARS of values, but try and grab frequencies over the whole spectrum
-                    const index = (i + 10) * 2;
-                    // fd is a frequency value between 0 and 255
-                    const fd = frequencyData[index];
-
-                    // Fetch the bar DIV element
-                    const bar = document.querySelector("#bar" + i);
-                    if (!bar) {
-                        continue;
-                    }
-
-                    // If fd is undefined, default to 0, then make sure fd is at least 4
-                    // This will make make a quiet frequency at least 4px high for visual effects
-                    const barHeight = Math.max(4, fd || 0);
-                    bar.style.height = barHeight + "px";
-
-                }
-
-                // At the next animation frame, call ourselves
-                window.requestAnimationFrame(renderFrame);
-
-            }
-
-            renderFrame();
-
-            // audio.volume = 0.10;
-            audio.play();
-
-        };
-
-    </script>
-
+    <main>
+        <section class="_1"></section>
+        <section class="_2"></section>
+    </main>
 </body>
 
 </html>
