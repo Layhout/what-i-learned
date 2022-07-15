@@ -45,11 +45,28 @@
             /* animation: shaking 8s ease infinite; */
             /* opacity: 0;
             animation: text_visible 0.0001s ease 1s forwards; */
-            animation: e2 2s ease forwards;
+            /* animation: e1 2s ease, blur_out 2s ease 5s forwards; */
+            /* animation: e2 2s ease forwards, blur_out 2s ease 5s forwards; */
+            /* animation: e4 2s ease, blur_out 2s ease 5s forwards; */
+            /* for e5 & e6 */
+            overflow: hidden;
+            animation: blur_out 2s ease 5s forwards;
         }
 
-        section div p {
-            animation: blur_out 2s ease 5s forwards;
+        /* section div p {
+            animation: e5 2s ease;
+        } */
+
+        section div p:first-child {
+            /* animation: e6_t 2s ease; */
+            opacity: 0;
+            animation: e7 2s ease forwards;
+        }
+
+        section div p:last-child {
+            /* animation: e6_b 2s ease; */
+            opacity: 0;
+            animation: e7 2s ease 1s forwards;
         }
 
         @keyframes blur_out {
@@ -166,6 +183,56 @@
             100% {
                 left: 100%;
                 width: 0%;
+            }
+        }
+
+        @keyframes e4 {
+            from {
+                transform: rotateX(90deg);
+            }
+
+            to {
+                transform: rotateX(0deg);
+            }
+        }
+
+        @keyframes e5 {
+            from {
+                transform: translateY(100px);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes e6_t {
+            from {
+                transform: translateX(-100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes e6_b {
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes e7 {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
             }
         }
     </style>
