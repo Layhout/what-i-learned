@@ -49,8 +49,10 @@
             /* animation: e2 2s ease forwards, blur_out 2s ease 5s forwards; */
             /* animation: e4 2s ease, blur_out 2s ease 5s forwards; */
             /* for e5 & e6 */
-            overflow: hidden;
-            animation: blur_out 2s ease 5s forwards;
+            /* overflow: hidden; */
+            /* animation: blur_out 2s ease 5s forwards; */
+            opacity: 0;
+            animation: e8 2s ease -0.8s forwards, blur_out 2s ease 5s forwards;
         }
 
         /* section div p {
@@ -59,14 +61,14 @@
 
         section div p:first-child {
             /* animation: e6_t 2s ease; */
-            opacity: 0;
-            animation: e7 2s ease forwards;
+            /* opacity: 0; */
+            /* animation: e7 2s ease forwards; */
         }
 
         section div p:last-child {
             /* animation: e6_b 2s ease; */
-            opacity: 0;
-            animation: e7 2s ease 1s forwards;
+            /* opacity: 0; */
+            /* animation: e7 2s ease 1s forwards; */
         }
 
         @keyframes blur_out {
@@ -235,6 +237,40 @@
                 opacity: 1;
             }
         }
+
+        .testing {
+            width: 200px;
+            overflow: hidden;
+        }
+
+        @keyframes smoke {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-1600px);
+            }
+        }
+
+        .testing img {
+            animation: smoke 0.3s steps(8) forwards;
+        }
+
+        @keyframes e8 {
+            0% {
+                transform: rotateZ(90deg);
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateZ(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -246,6 +282,9 @@
                 <p>i cannot lie.</p>
             </div>
         </section>
+        <!-- <div class="testing">
+            <img src="public/smokeExplosion.png" alt="">
+        </div> -->
     </main>
 </body>
 
