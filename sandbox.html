@@ -20,26 +20,58 @@
             place-content: center;
         }
 
-        section {
-            width: 100px;
-            height: 100px;
+        button {
+            background-color: lightgray;
+            border: none;
+            outline: none;
+            width: 50px;
+            padding: 5px;
+            border-radius: 50px;
+            cursor: pointer;
         }
 
-        ._1 {
-            background-color: red;
+        div {
+            height: 20px;
+            position: relative;
         }
 
-        ._2 {
-            background-color: orange;
+        .switch_handle {
+            display: inline-block;
+            width: 20px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            background-color: white;
+            border-radius: 50px;
+            transition: all .5s ease;
+        }
+
+        button[data-switch="true"] {
+            background-color: lightskyblue;
+        }
+
+        button[data-switch="true"] .switch_handle {
+            left: calc(100% - 20px);
         }
     </style>
 </head>
 
 <body>
     <main>
-        <section class="_1"></section>
-        <section class="_2"></section>
+        <button data-switch="false" onclick="handleSwitch(this)">
+            <div>
+                <div class="switch_handle"></div>
+            </div>
+        </button>
     </main>
+
+    <script>
+        function handleSwitch(el) {
+            if (el.dataset.switch === "false") el.dataset.switch = "true";
+            else el.dataset.switch = "false";
+        }
+    </script>
 </body>
 
 </html>
