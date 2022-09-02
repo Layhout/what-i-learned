@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        main {
+            height: 100vh;
+            display: grid;
+            place-content: center;
+        }
+
+        section {
+            width: 200px;
+            height: 200px;
+            background-color: pink;
+            transition: all 0.5s ease;
+            transform: translate3d(0px, 0px, 0px);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section>
+        </section>
+    </main>
+
+    <script>
+        let click = false, startX = null, startY = null, timer = null, mtX = 0, mtY = 0;
+
+        document.querySelector("main").addEventListener("pointerdown", e => {
+            click = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            let bx = 0, by = 0;
+            document.querySelector("section").style.transition = "none";
+            timer = setInterval(() => {
+                bx += 0.1 * (mtX - bx);
+                by += 0.1 * (mtY - by);
+                document.querySelector("section").style.transform = `translate3d(${bx}px, ${by}px, 0px)`;
+            }, 15);
+        });
+
+        document.querySelector("main").addEventListener("pointerup", e => {
+            click = false;
+            if (timer) clearInterval(timer);
+            document.querySelector("section").removeAttribute("style");
+            mtX = 0;
+            mtY = 0;
+        });
+
+        document.querySelector("main").addEventListener("pointermove", e => {
+            if (!click) return;
+            mtX = e.clientX - startX;
+            mtY = e.clientY - startY;
+        })
+
+        document.addEventListener("pointerleave", () => {
+            click = false;
+            if (timer) clearInterval(timer);
+            document.querySelector("section").removeAttribute("style");
+            mtX = 0;
+            mtY = 0;
+        })
+
+        document.addEventListener("contextmenu", () => {
+            click = false;
+            if (timer) clearInterval(timer);
+            document.querySelector("section").removeAttribute("style");
+            mtX = 0;
+            mtY = 0;
+        })
+    </script>
+</body>
+
+</html>
