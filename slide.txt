@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        main {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        section {
+            display: flex;
+            transition: all 0.5s ease;
+            transform: translate3d(0px, 0px, 0px);
+        }
+
+        div {
+            min-width: 100%;
+            height: 100vh;
+            display: grid;
+            place-content: center;
+        }
+
+        div.s1 {
+            background-color: pink;
+        }
+
+        div.s2 {
+            background-color: lightcoral;
+        }
+
+        div.s3 {
+            background-color: lightgreen;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <section>
+            <div class="s1">
+                <h1>slide 1</h1>
+            </div>
+            <div class="s2">
+                <h1>slide 2</h1>
+            </div>
+            <div class="s3">
+                <h1>slide 3</h1>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let click = false, startX = null, startY = null, timer = null, mtX = 0, bx = 0, inputBreaker = false;
+        let section = document.querySelector("section"), main = document.querySelector("main");
+
+        section.addEventListener("pointerdown", e => { startSliding(e, e.pointerType === "touch") });
+        section.addEventListener("pointermove", e => { whileSliding(e, e.pointerType === "touch") });
+        section.addEventListener("pointerup", e => { endSliding(e, e.pointerType === "touch") });
+        section.addEventListener("transitionstart", e => { section.style.pointerEvents = "none"; });
+        section.addEventListener("transitionend", e => { section.style.pointerEvents = "initial"; });
+
+        document.addEventListener("pointerleave", e => { endSliding(e, e.pointerType === "touch") })
+        document.addEventListener("pointerup", e => { endSliding(e, e.pointerType === "touch") })
+        document.addEventListener("touchmove", e => { whileSliding(e.touches[0], true); });
+        document.addEventListener("touchend", e => { endSliding(e.touches[0], true); });
+        document.addEventListener("contextmenu", e => { e.preventDefault(); endSliding(e); });
+        document.addEventListener("keyup", keySliding);
+
+        main.addEventListener("wheel", scrollSliding);
+
+        function startSliding(e, onMobile = false) {
+            if (timer) return;
+            click = true;
+            startX = (e.clientX / window.innerWidth) * 100;
+            let sx = bx;
+            section.style.transition = "none";
+            timer = setInterval(() => {
+                const nx = bx + mtX;
+                sx = sx + (0.1 * (nx - sx));
+                // sx = Math.max(-210, Math.min(10, sx));
+                section.style.transform = `translateX(${sx}%)`;
+            }, 15);
+        }
+
+        function whileSliding(e, onMobile = false) {
+            if (!click && !onMobile) return;
+            mtX = ((e.clientX / window.innerWidth) * 100) - startX;
+        }
+
+        function endSliding(e, onMobile = false) {
+            if (onMobile && e) return;
+            click = false;
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            mtX = Math.max(-210, Math.min(10, bx + mtX));
+            if (mtX > 0) bx = 0;
+            else if (mtX < section.scrollWidth / window.innerWidth * -100) bx = (section.scrollWidth / window.innerWidth * -100) + 100;
+            else if ((bx - mtX) % 100 >= 30) bx = Math.ceil(mtX / -100) * -100;
+            else if ((bx - mtX) % 100 <= -30) bx = Math.floor(mtX / -100) * -100;
+            // else bx = Math.round(mtX / -100) * -100;
+            mtX = 0;
+            section.style.transition = "all 0.5s ease";
+            section.style.transform = `translateX(${bx}%)`;
+        }
+
+        function scrollSliding(e) {
+            if (inputBreaker || e.deltaX === -0) return;
+            if (e.deltaX > 0) {
+                if (bx === -200) return;
+                bx += -100;
+                inputBreaker = true;
+                setTimeout(() => {
+                    inputBreaker = false;
+                }, 500)
+            } else {
+                if (bx === 0) return;
+                bx += 100;
+                inputBreaker = true;
+                setTimeout(() => {
+                    inputBreaker = false;
+                }, 500)
+            }
+            section.style.transform = `translateX(${bx}%)`;
+        }
+
+        function keySliding(e) {
+            if (e.key === "ArrowRight") {
+                if (bx === -200) return;
+                bx += -100;
+            }
+            if (e.key === "ArrowLeft") {
+                if (bx === 0) return;
+                bx += 100;
+            }
+            section.style.transform = `translateX(${bx}%)`;
+        }
+    </script>
+</body>
+
+</html>
