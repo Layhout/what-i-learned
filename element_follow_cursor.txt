@@ -55,13 +55,7 @@
             }, 15);
         });
 
-        document.querySelector("main").addEventListener("pointerup", e => {
-            click = false;
-            if (timer) clearInterval(timer);
-            document.querySelector("section").removeAttribute("style");
-            mtX = 0;
-            mtY = 0;
-        });
+        document.querySelector("main").addEventListener("pointerup", resetPos);
 
         document.querySelector("main").addEventListener("pointermove", e => {
             if (!click) return;
@@ -69,21 +63,18 @@
             mtY = e.clientY - startY;
         })
 
-        document.addEventListener("pointerleave", () => {
-            click = false;
-            if (timer) clearInterval(timer);
-            document.querySelector("section").removeAttribute("style");
-            mtX = 0;
-            mtY = 0;
-        })
+        document.addEventListener("pointerleave", resetPos)
 
-        document.addEventListener("contextmenu", () => {
+        document.addEventListener("contextmenu", resetPos);
+
+        function resetPos(e) {
+            e.preventDefault();
             click = false;
             if (timer) clearInterval(timer);
             document.querySelector("section").removeAttribute("style");
             mtX = 0;
             mtY = 0;
-        })
+        }
     </script>
 </body>
 
