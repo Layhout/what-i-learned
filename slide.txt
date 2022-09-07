@@ -13,138 +13,248 @@
             box-sizing: border-box;
         }
 
+        html,
+        body {
+            overflow: hidden;
+            height: 100%;
+        }
+
         main {
-            height: 100vh;
+            /* sh = slide height */
+            --sh: calc(100vh - 56px);
+            /* tt = transition timer */
+            --tt: 0.4s;
+            margin-top: 56px;
+            height: var(--sh);
             overflow: hidden;
         }
 
-        section {
+        .slide_wrapper {
             display: flex;
-            transition: all 0.5s cubic-bezier(0, 0, 0, 1);
+            transition: all var(--tt) cubic-bezier(0, 0, 0, 1);
             transform: translate3d(0px, 0px, 0px);
         }
 
-        div {
-            min-width: 100%;
-            height: 100vh;
-            display: grid;
-            place-content: center;
-            overflow: hidden;
+        .slide_wrapper div {
+            width: 100vw;
+            height: var(--sh);
+            user-select: none;
         }
 
-        div.s1 {
-            background-color: pink;
-        }
-
-        div.s2 {
-            background-color: lightcoral;
-        }
-
-        div.s3 {
-            background-color: lightgreen;
+        .slide {
+            transition: all var(--tt) cubic-bezier(0, 0, 0, 1);
+            transform: translate3d(0px, 0px, 0px);
         }
     </style>
 </head>
 
 <body>
     <main>
-        <section>
-            <div class="s1">
-                <h1>slide 1.1</h1>
+        <section style="transform: translateX(0%);" id="slide_wrapper" class="slide_wrapper">
+            <div class="slide" style="transform: translateY(0%);">
+                <div style="background-color: pink;">
+                    <h1>slide 1.1</h1>
+                </div>
+                <div style="background-color: lightblue;">
+                    <h1>slide 1.2</h1>
+                </div>
+                <div style="background-color: lightseagreen;">
+                    <h1>slide 1.3</h1>
+                </div>
             </div>
-            <div class="s2">
-                <h1>slide 2.1</h1>
+            <div class="slide">
+                <div style="background-color: darkcyan;">
+                    <h1>slide 2.1</h1>
+                </div>
+                <div style="background-color: darkgoldenrod;">
+                    <h1>slide 2.2</h1>
+                </div>
+                <div style="background-color: darkgray;">
+                    <h1>slide 2.3</h1>
+                </div>
+                <div style="background-color: darkgreen;">
+                    <h1>slide 2.4</h1>
+                </div>
+                <div style="background-color: darkkhaki;">
+                    <h1>slide 2.5</h1>
+                </div>
             </div>
-            <div class="s3">
-                <h1>slide 3.1</h1>
+            <div class="slide">
+                <div style="background-color: palevioletred;">
+                    <h1>slide 3.1</h1>
+                </div>
             </div>
         </section>
     </main>
 
     <script>
-        let click = false, startX = null, timer = null, mtX = 0, bx = 0, inputBreaker = false;
-        let section = document.querySelector("section"), main = document.querySelector("main");
+        let wrapper = document.querySelector("#slide_wrapper"), slides = document.querySelectorAll("div.slide");
+        let click = false,
+            startX = 0,
+            startY = 0,
+            timer = null,
+            mtX = 0,
+            mtY = 0,
+            bx = 0,
+            by = new Array(slides.length).fill(0),
+            inputBreaker = false,
+            sd = null,
+            flickingTime = null;
 
-        section.addEventListener("pointerdown", e => { startSliding(e, e.pointerType === "touch") });
-        section.addEventListener("pointermove", e => { whileSliding(e, e.pointerType === "touch") });
-        section.addEventListener("pointerup", e => { endSliding(e, e.pointerType === "touch") });
-        section.addEventListener("transitionstart", e => { section.style.pointerEvents = "none"; });
-        section.addEventListener("transitionend", e => { section.style.pointerEvents = "initial"; });
-        section.addEventListener("touchmove", e => { whileSliding(e.touches[0], true); });
-        section.addEventListener("touchend", e => { endSliding(e.touches[0], true); });
-
-        document.addEventListener("pointerleave", e => { endSliding(e, e.pointerType === "touch") });
+        document.addEventListener("pointerdown", handleClick);
+        document.addEventListener("pointermove", e => { whileSliding(e, e.pointerType === "touch") });
         document.addEventListener("pointerup", e => { endSliding(e, e.pointerType === "touch") });
-        document.addEventListener("contextmenu", e => { e.preventDefault(); endSliding(e); });
-        document.addEventListener("keyup", keySliding);
+        document.addEventListener("touchmove", e => { whileSliding(e.touches[0], true); });
+        document.addEventListener("touchend", e => { endSliding(e.touches[0], true); });
+        document.addEventListener("pointerleave", e => { endSliding(e, e.pointerType === "touch") });
+        document.addEventListener("contextmenu", endSliding);
+        document.addEventListener("keydown", keySliding);
+        document.addEventListener("wheel", scrollSliding);
 
-        main.addEventListener("wheel", scrollSliding);
+        wrapper.addEventListener("transitionstart", () => { document.removeEventListener("pointerdown", handleClick); });
+        wrapper.addEventListener("transitionend", () => { document.addEventListener("pointerdown", handleClick); });
+
+        function handleClick(e) {
+            e.preventDefault();
+            startSliding(e, e.pointerType === "touch");
+        }
 
         function startSliding(e, onMobile = false) {
             if (timer) return;
             click = true;
             startX = (e.clientX / window.innerWidth) * 100;
+            startY = (e.clientY / window.innerHeight) * 100;
             let sx = bx;
-            section.style.transition = "none";
+            const byI = Math.abs(bx) / 100;
+            let sy = by[byI];
+            wrapper.style.transition = "none";
             timer = setInterval(() => {
                 const nx = bx + mtX;
                 sx = sx + (0.1 * (nx - sx));
-                section.style.transform = `translateX(${sx}%)`;
+                wrapper.style.transform = `translateX(${sx}%)`;
+                const ny = by[byI] + mtY;
+                sy = sy + (0.1 * (ny - sy));
+                slides[byI].style.transform = `translateY(${sy}%)`;
             }, 15);
+            flickingTime = new Date().getTime();
         }
 
         function whileSliding(e, onMobile = false) {
             if (!click && !onMobile) return;
             mtX = ((e.clientX / window.innerWidth) * 100) - startX;
+            mtY = ((e.clientY / window.innerHeight) * 100) - startY;
+            if (!sd) {
+                if (Math.floor(Math.abs(mtX)) > Math.floor(Math.abs(mtY))) sd = "x";
+                if (Math.floor(Math.abs(mtX)) < Math.floor(Math.abs(mtY))) sd = "y";
+            }
+            if (sd === "x") mtY = 0;
+            else mtX = 0;
         }
 
         function endSliding(e, onMobile = false) {
             if (onMobile && e) return;
+            sd = null;
             click = false;
             if (timer) {
                 clearInterval(timer);
                 timer = null;
             }
-            mtX = Math.max(-210, Math.min(10, bx + mtX));
+            const byI = Math.abs(bx) / 100;
+            // tavsh = total active vertical slide height
+            const tavsh = slides[byI].querySelectorAll("div").length ? slides[byI].querySelectorAll("div").length * -100 + 100 : 0;
+            // tsw = total slide width
+            const tsw = wrapper.querySelectorAll(".slide").length * -100 + 100;
+
+            if (flickingTime && new Date().getTime() - flickingTime < 1000) {
+                if (mtX < 0 && bx !== Math.ceil(tsw)) bx += -100;
+                if (mtX > 0 && bx !== 0) bx += 100;
+                if (mtY > 0 && by[byI] !== 0) by[byI] += 100;
+                if (mtY < 0 && by[byI] !== tavsh) by[byI] += -100;
+                mtX = 0; mtY = 0;
+                flickingTime = null;
+                wrapper.style.transition = "";
+                wrapper.style.transform = `translateX(${bx}%)`;
+                slides[byI].style.transition = "";
+                slides[byI].style.transform = `translateY(${by[byI]}%)`;
+                return;
+            }
+
+            mtX = Math.max(tsw - 10, Math.min(10, bx + mtX));
             if (mtX > 0) bx = 0;
-            else if (mtX < section.scrollWidth / window.innerWidth * -100) bx = (section.scrollWidth / window.innerWidth * -100) + 100;
-            else if ((bx - mtX) % 100 >= 30) bx = Math.ceil(mtX / -100) * -100;
-            else if ((bx - mtX) % 100 <= -30) bx = Math.floor(mtX / -100) * -100;
+            else if (mtX < wrapper.querySelectorAll(".slide").length * -100) bx = tsw;
+            else if ((bx - mtX) % 100 >= 30) bx += -100;
+            else if ((bx - mtX) % 100 <= -30) bx += 100;
             mtX = 0;
-            section.style.transition = "";
-            section.style.transform = `translateX(${bx}%)`;
+            wrapper.style.transition = "";
+            wrapper.style.transform = `translateX(${bx}%)`;
+
+            mtY = Math.max(tavsh - 10, Math.min(10, by[byI] + mtY));
+            if (mtY > 0) by[byI] = 0
+            else if (mtY < tavsh) by[byI] = tavsh;
+            else if ((by[byI] - mtY) % 100 >= 30) by[byI] += -100;
+            else if ((by[byI] - mtY) % 100 <= -30) by[byI] += 100;
+            mtY = 0;
+            slides[byI].style.transition = "";
+            slides[byI].style.transform = `translateY(${by[byI]}%)`;
         }
 
         function scrollSliding(e) {
-            if (inputBreaker || e.deltaX === -0) return;
-            if (e.deltaX > 0) {
-                if (bx === -200) return;
+            if (inputBreaker) return;
+            const scrollX = e.deltaX === -0 ? 0 : e.deltaX;
+            const scrollY = e.deltaY === -0 ? 0 : e.deltaY;
+            if (scrollX > 0 && bx !== wrapper.querySelectorAll(".slide").length * -100 + 100) {
                 bx += -100;
                 inputBreaker = true;
                 setTimeout(() => {
                     inputBreaker = false;
                 }, 500)
-            } else {
-                if (bx === 0) return;
+            }
+            if (scrollX < 0 && bx !== 0) {
                 bx += 100;
                 inputBreaker = true;
                 setTimeout(() => {
                     inputBreaker = false;
                 }, 500)
             }
-            section.style.transform = `translateX(${bx}%)`;
+            const byI = Math.abs(bx) / 100;
+            if (scrollY > 0 && by[byI] !== slides[byI].querySelectorAll("div").length * -100 + 100) {
+                by[byI] += -100;
+                inputBreaker = true;
+                setTimeout(() => {
+                    inputBreaker = false;
+                }, 500)
+            }
+            if (scrollY < 0 && by[byI] !== 0) {
+                by[byI] += 100;
+                inputBreaker = true;
+                setTimeout(() => {
+                    inputBreaker = false;
+                }, 500)
+            }
+            wrapper.style.transform = `translateX(${bx}%)`;
+            slides[byI].style.transform = `translateY(${by[byI]}%)`;
         }
 
         function keySliding(e) {
             if (e.key === "ArrowRight") {
-                if (bx === -200) return;
+                if (bx === wrapper.querySelectorAll(".slide").length * -100 + 100) return;
                 bx += -100;
             }
             if (e.key === "ArrowLeft") {
                 if (bx === 0) return;
                 bx += 100;
             }
-            section.style.transform = `translateX(${bx}%)`;
+            const byI = Math.abs(bx) / 100;
+            if (e.key === "ArrowUp") {
+                if (by[byI] === 0) return;
+                by[byI] += 100;
+            }
+            if (e.key === "ArrowDown") {
+                if (by[byI] === slides[byI].querySelectorAll("div").length * -100 + 100) return;
+                by[byI] += -100;
+            }
+            wrapper.style.transform = `translateX(${bx}%)`;
+            slides[byI].style.transform = `translateY(${by[byI]}%)`;
         }
     </script>
 </body>
