@@ -1,0 +1,365 @@
+----- the component -----
+import React, { useEffect, useRef, useState } from 'react';
+import style from "./MultiLevelSlide.module.css";
+
+const MultiLevelSlide = ({ children }) => {
+  const mainRef = useRef();
+  const spRef = useRef({ // sp = slide properties
+    wrapper: null,
+    slides: [],
+    click: false,
+    startX: 0,
+    startY: 0,
+    timer: null,
+    mtX: 0,
+    mtY: 0,
+    bx: 0,
+    by: [],
+    sd: null,
+    flickingTime: null,
+    inputbreak: false,
+  });
+  const { current: sp } = spRef;
+
+  useEffect(() => {
+    sp.wrapper = mainRef.current.querySelector("#MLS_slide_wrapper");
+    sp.slides = sp.wrapper.querySelectorAll(".MLS_slide");
+    sp.by = new Array(sp.slides.length).fill(0);
+
+    document.querySelector("html").dataset.home = "true";
+    document.body.dataset.home = "true";
+
+    sp.wrapper.addEventListener("pointerdown", handlePointerEvents);
+    sp.wrapper.addEventListener("pointermove", handlePointerEvents);
+    sp.wrapper.addEventListener("pointerup", handlePointerEvents);
+    sp.wrapper.addEventListener("touchmove", handleTouchEvents);
+    sp.wrapper.addEventListener("touchend", handleTouchEvents);
+
+    document.addEventListener("pointerleave", handlePointerEvents);
+    document.addEventListener("contextmenu", endSliding);
+    document.addEventListener("keydown", keySliding);
+    document.addEventListener("wheel", scrollSliding);
+
+    
+
+    return () => {
+      sp.wrapper.removeEventListener("pointerdown", handlePointerEvents);
+      sp.wrapper.removeEventListener("pointermove", handlePointerEvents);
+      sp.wrapper.removeEventListener("pointerup", handlePointerEvents);
+      sp.wrapper.removeEventListener("touchmove", handleTouchEvents);
+      sp.wrapper.removeEventListener("touchend", handleTouchEvents);
+
+      document.removeEventListener("pointerleave", handlePointerEvents);
+      document.removeEventListener("contextmenu", endSliding);
+      document.removeEventListener("keydown", keySliding);
+      document.removeEventListener("wheel", scrollSliding);
+      document.querySelector("html").removeAttribute("data-home");
+      document.body.removeAttribute("data-home");
+    }
+
+  }, []);
+
+  function handlePointerEvents(e) {
+    switch (e.type) {
+      case "pointerdown":
+        e.preventDefault();
+        startSliding(e, e.pointerType === "touch");
+        break;
+      case "pointermove":
+        whileSliding(e);
+        break;
+      case "pointerup":
+      case "pointerleave":
+        endSliding(e, e.pointerType === "touch");
+        break;
+    }
+  }
+
+  function handleTouchEvents(e) {
+    if (e.type === "touchmove") whileSliding(e.touches[0]);
+    else endSliding(e.touches[0], true);
+  }
+
+  function startSliding(e) {
+    if (sp.timer) return;
+    sp.click = true;
+    sp.startX = (e.clientX / window.innerWidth) * 100;
+    sp.startY = (e.clientY / window.innerHeight) * 100;
+    let sx = sp.bx;
+    const byI = Math.abs(sp.bx) / 100;
+    let sy = sp.by[byI];
+    sp.wrapper.style.transition = "var(--ts)";
+    sp.slides[byI].style.transition = "var(--ts)";
+    sp.timer = setInterval(() => {
+      const nx = sp.bx + sp.mtX;
+      sx = sx + (0.3 * (nx - sx));
+      sp.wrapper.style.transform = `translateX(${sx}%)`;
+      const ny = sp.by[byI] + sp.mtY;
+      sy = sy + (0.3 * (ny - sy));
+      sp.slides[byI].style.transform = `translateY(${sy}%)`;
+    }, 15);
+    sp.flickingTime = new Date().getTime();
+  }
+
+  function whileSliding(e, onMobile = false) {
+    if (!sp.click && !onMobile) return;
+    sp.mtX = ((e.clientX / window.innerWidth) * 100) - sp.startX;
+    sp.mtY = ((e.clientY / window.innerHeight) * 100) - sp.startY;
+    if (!sp.sd) {
+      if (Math.floor(Math.abs(sp.mtX)) > Math.floor(Math.abs(sp.mtY))) sp.sd = "x";
+      if (Math.floor(Math.abs(sp.mtX)) < Math.floor(Math.abs(sp.mtY))) sp.sd = "y";
+    }
+    if (sp.sd === "x") sp.mtY = 0;
+    else sp.mtX = 0;
+  }
+
+  function endSliding(e, onMobile = false) {
+    if (onMobile && e) return;
+    sp.sd = null;
+    sp.click = false;
+    if (sp.timer) {
+      clearInterval(sp.timer);
+      sp.timer = null;
+    }
+    const byI = Math.abs(sp.bx) / 100;
+    // tavsh = total active vertical slide height
+    const tavsh = sp.slides[byI].querySelectorAll(".MLS_slide_column").length ? sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100 : 0;
+    // tsw = total slide width
+    const tsw = sp.slides.length * -100 + 100;
+
+    sp.wrapper.style.transition = "";
+    sp.slides[byI].style.transition = "";
+
+    if (sp.flickingTime && new Date().getTime() - sp.flickingTime < 1000) {
+      if (sp.mtX < 0 && sp.bx !== Math.ceil(tsw)) sp.bx += -100;
+      if (sp.mtX > 0 && sp.bx !== 0) sp.bx += 100;
+      if (sp.mtY > 0 && sp.by[byI] !== 0) sp.by[byI] += 100;
+      if (sp.mtY < 0 && sp.by[byI] !== tavsh) sp.by[byI] += -100;
+      sp.mtX = 0; sp.mtY = 0;
+      sp.flickingTime = null;
+      sp.wrapper.style.transition = "";
+      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+      sp.slides[byI].style.transition = "";
+      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+      return;
+    }
+
+    sp.mtX = Math.max(tsw - 10, Math.min(10, sp.bx + sp.mtX));
+    if (sp.mtX > 0) sp.bx = 0;
+    else if (sp.mtX < sp.slides.length * -100) sp.bx = tsw;
+    else if ((sp.bx - sp.mtX) % 100 >= 30) sp.bx += -100;
+    else if ((sp.bx - sp.mtX) % 100 <= -30) sp.bx += 100;
+    sp.mtX = 0;
+    sp.wrapper.style.transition = "";
+    sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+
+    sp.mtY = Math.max(tavsh - 10, Math.min(10, sp.by[byI] + sp.mtY));
+    if (sp.mtY > 0) sp.by[byI] = 0
+    else if (sp.mtY < tavsh) sp.by[byI] = tavsh;
+    else if ((sp.by[byI] - sp.mtY) % 100 >= 30) sp.by[byI] += -100;
+    else if ((sp.by[byI] - sp.mtY) % 100 <= -30) sp.by[byI] += 100;
+    sp.mtY = 0;
+    sp.slides[byI].style.transition = "";
+    sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+  }
+
+  function scrollSliding(e) {
+    if (inputbreak) return;
+    const scrollX = e.deltaX === -0 ? 0 : e.deltaX;
+    const scrollY = e.deltaY === -0 ? 0 : e.deltaY;
+    if (scrollX > 0 && sp.bx !== sp.slides.length * -100 + 100) {
+      sp.bx += -100;
+      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+      sp.inputbreak = true;
+      setTimeout(() => {
+        sp.inputbreak = false;
+      }, 1000)
+      return;
+    }
+    if (scrollX < 0 && sp.bx !== 0) {
+      sp.bx += 100;
+      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+      sp.inputbreak = true;
+      setTimeout(() => {
+        sp.inputbreak = false;
+      }, 1000)
+      return;
+    }
+    const byI = Math.abs(sp.bx) / 100;
+    if (scrollY > 0 && sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] !== sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) {
+      sp.by[byI] += -100;
+      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+      sp.inputbreak = true;
+      setTimeout(() => {
+        sp.inputbreak = false;
+      }, 1000)
+      return;
+    }
+    if (scrollY < 0 && sp.by[byI] !== 0) {
+      sp.by[byI] += 100;
+      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+      sp.inputbreak = true;
+      setTimeout(() => {
+        sp.inputbreak = false;
+      }, 1000)
+      return;
+    }
+  }
+
+  function keySliding(e) {
+    if (e.key === "ArrowRight") {
+      if (sp.bx === sp.slides.length * -100 + 100) return;
+      sp.bx += -100;
+    }
+    if (e.key === "ArrowLeft") {
+      if (sp.bx === 0) return;
+      sp.bx += 100;
+    }
+    const byI = Math.abs(sp.bx) / 100;
+    if (e.key === "ArrowUp") {
+      if (sp.by[byI] === 0) return;
+      sp.by[byI] += 100;
+    }
+    if (e.key === "ArrowDown") {
+      if (sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] === sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) return;
+      sp.by[byI] += -100;
+    }
+    sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+    sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+  }
+
+  return (
+    <main ref={mainRef} className={style.slide_container}>
+      <section id="MLS_slide_wrapper" className={style.slide_wrapper}>
+        {children}
+      </section>
+    </main>
+  )
+}
+
+export default MultiLevelSlide;
+----- end of component -----
+
+
+
+* ----- css of component ----- *
+.slide_container {
+  /* sh = slide height */
+  --sh: 100vh;
+  /* tws = transition without scroll */
+  --tws: all 1s cubic-bezier(0.2, 0, 0.1, 1);
+  /* tws = transition when scroll */
+  --ts: all 1s cubic-bezier(0, 0, 0, 1);
+  height: var(--sh);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.slide_container:active {
+  cursor: grabbing;
+}
+
+.slide_wrapper {
+  display: flex;
+  transition: var(--tws);
+  transform: translate3d(0px, 0px, 0px);
+}
+
+.slide_wrapper .slide,
+.slide_wrapper .slide_column {
+  width: 100vw;
+  height: var(--sh);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.slide_wrapper .slide_column {
+  overflow: hidden;
+}
+
+.slide {
+  transition: var(--tws);
+  transform: translate3d(0px, 0px, 0px);
+  list-style: none;
+  padding: 0;
+}
+
+.slide_wrapper h1 {
+  font-size: 100px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.silde_item {
+  background-image: var(--bg-web);
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (max-width: 767px) {
+  .silde_item {
+    background-image: var(--bg-mobile);
+  }
+}
+----- end of css of component -----
+
+
+
+* ----- how to use ----- *
+import React from 'react'
+import MainLayout from '../component/layout/MainLayout'
+import MultiLevelSlide from '../component/multiLevelSlide/MultiLevelSlide'
+import slide_style from "../component/multiLevelSlide/MultiLevelSlide.module.css";
+import { Config, postWithToken } from '../helper';
+
+
+const fakehomepage = props => {
+    const { home } = props;
+    const { sections } = home[0];
+
+    return (
+        <MainLayout {...props} isFooter={false} >
+            <MultiLevelSlide>
+                {sections.map((ss, i) => (
+                    <ul className={`${slide_style.slide} MLS_slide`} key={i}>
+                        {ss.map((s, i) => (
+                            <li key={i} className={`${slide_style.slide_column} MLS_slide_column ${slide_style.silde_item}`} style={{ "--bg-web": `url("${Config.imagePath + s.image_web}")`, "--bg-mobile": `url("${Config.imagePath + s.image}")` }}>
+                            </li>
+                        ))}
+                    </ul>
+                ))}
+            </MultiLevelSlide>
+        </MainLayout>
+    )
+}
+
+export default fakehomepage;
+
+export const getServerSideProps = async (context) => {
+    try {
+        let profile = null;
+        if (context.req.cookies.profile) profile = JSON.parse(context.req.cookies.profile);
+        var home = await postWithToken("Homepage/getHomePage2", null, profile);
+        return {
+            props: {
+                ...home,
+                mata_title: "Zando Cambodia",
+                meta_title: home['meta_data'].meta_title,
+                meta_description: home['meta_data'].meta_description,
+                meta_keyword: home['meta_data'].meta_keyword
+            },
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            props: {
+                mata_title: "",
+                meta_title: "",
+                meta_description: "",
+                meta_keyword: ""
+            },
+        };
+    }
+};
+----- end of how to use -----
