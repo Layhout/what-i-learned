@@ -1,8 +1,9 @@
 ----- the component -----
 import React, { useEffect, useRef, useState } from 'react';
+import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import style from "./MultiLevelSlide.module.css";
 
-const MultiLevelSlide = ({ children }) => {
+const MultiLevelSlide = ({ children, setSci }) => {
   const mainRef = useRef();
   const spRef = useRef({ // sp = slide properties
     wrapper: null,
@@ -10,21 +11,33 @@ const MultiLevelSlide = ({ children }) => {
     click: false,
     startX: 0,
     startY: 0,
-    timer: null,
     mtX: 0,
     mtY: 0,
     bx: 0,
     by: [],
+    sx: 0,
+    sy: [],
     sd: null,
     flickingTime: null,
     inputbreak: false,
+    scrollYTimer: null,
+    now: null,
+    then: Date.now(),
+    interval: 1000 / 60, // 1000 / 60 = 60 frame per second
+    delta: null,
+    animationId: null,
   });
   const { current: sp } = spRef;
+  const [slideIndex, setSlideIndex] = useState({ c: 0, t: null });
+  const [slideColumnIndex, setSlideColumnIndex] = useState([]);
 
   useEffect(() => {
     sp.wrapper = mainRef.current.querySelector("#MLS_slide_wrapper");
     sp.slides = sp.wrapper.querySelectorAll(".MLS_slide");
     sp.by = new Array(sp.slides.length).fill(0);
+    sp.sy = new Array(sp.slides.length).fill(0);
+    setSlideIndex(p => ({ ...p, t: sp.slides.length - 1 }));
+    setSlideColumnIndex(new Array(sp.slides.length).fill(0));
 
     document.querySelector("html").dataset.home = "true";
     document.body.dataset.home = "true";
@@ -40,7 +53,9 @@ const MultiLevelSlide = ({ children }) => {
     document.addEventListener("keydown", keySliding);
     document.addEventListener("wheel", scrollSliding);
 
-    
+    autoScrollY();
+
+    animate();
 
     return () => {
       sp.wrapper.removeEventListener("pointerdown", handlePointerEvents);
@@ -55,9 +70,58 @@ const MultiLevelSlide = ({ children }) => {
       document.removeEventListener("wheel", scrollSliding);
       document.querySelector("html").removeAttribute("data-home");
       document.body.removeAttribute("data-home");
-    }
 
+      clearInterval(sp.scrollYTimer);
+      cancelAnimationFrame(sp.animationId);
+    }
   }, []);
+
+  function animate() {
+    sp.animationId = requestAnimationFrame(animate);
+
+    sp.now = Date.now();
+    sp.delta = sp.now - sp.then;
+
+    if (sp.delta > sp.interval) {
+      sp.then = sp.now - (sp.delta % sp.interval);
+
+      const nx = sp.bx + sp.mtX;
+      sp.sx = sp.sx + (0.05 * (nx - sp.sx));
+      sp.wrapper.style.transform = `translateX(${sp.sx}%)`;
+      const byI = Math.abs(sp.bx) / 100;
+      const ny = sp.by[byI] + sp.mtY;
+      sp.sy[byI] = sp.sy[byI] + (0.05 * (ny - sp.sy[byI]));
+      sp.slides[byI].style.transform = `translateY(${sp.sy[byI]}%)`;
+    }
+  }
+
+  useEffect(() => {
+    setSci(slideColumnIndex);
+  }, [slideColumnIndex]);
+
+  function autoScrollY(restart = false) {
+    if (sp.scrollYTimer) {
+      clearInterval(sp.scrollYTimer);
+      sp.scrollYTimer = null;
+      if (!restart) return;
+    }
+    if (!sp.scrollYTimer) {
+      sp.scrollYTimer = setInterval(() => {
+        const byI = Math.abs(sp.bx) / 100;
+        const tavsh = sp.slides[byI].querySelectorAll(".MLS_slide_column").length ? sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100 : 0;
+        if (sp.by[byI] > tavsh) {
+          sp.by[byI] += -100;
+        } else {
+          sp.by[byI] = 0;
+        }
+        setSlideColumnIndex(p => {
+          const ta = [...p];
+          ta[byI] = Math.abs(sp.by[byI]) / 100;
+          return ta;
+        });
+      }, 5000)
+    }
+  }
 
   function handlePointerEvents(e) {
     switch (e.type) {
@@ -81,23 +145,10 @@ const MultiLevelSlide = ({ children }) => {
   }
 
   function startSliding(e) {
-    if (sp.timer) return;
+    autoScrollY();
     sp.click = true;
     sp.startX = (e.clientX / window.innerWidth) * 100;
     sp.startY = (e.clientY / window.innerHeight) * 100;
-    let sx = sp.bx;
-    const byI = Math.abs(sp.bx) / 100;
-    let sy = sp.by[byI];
-    sp.wrapper.style.transition = "var(--ts)";
-    sp.slides[byI].style.transition = "var(--ts)";
-    sp.timer = setInterval(() => {
-      const nx = sp.bx + sp.mtX;
-      sx = sx + (0.3 * (nx - sx));
-      sp.wrapper.style.transform = `translateX(${sx}%)`;
-      const ny = sp.by[byI] + sp.mtY;
-      sy = sy + (0.3 * (ny - sy));
-      sp.slides[byI].style.transform = `translateY(${sy}%)`;
-    }, 15);
     sp.flickingTime = new Date().getTime();
   }
 
@@ -115,12 +166,9 @@ const MultiLevelSlide = ({ children }) => {
 
   function endSliding(e, onMobile = false) {
     if (onMobile && e) return;
+    if (!sp.scrollYTimer) autoScrollY();
     sp.sd = null;
     sp.click = false;
-    if (sp.timer) {
-      clearInterval(sp.timer);
-      sp.timer = null;
-    }
     const byI = Math.abs(sp.bx) / 100;
     // tavsh = total active vertical slide height
     const tavsh = sp.slides[byI].querySelectorAll(".MLS_slide_column").length ? sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100 : 0;
@@ -130,17 +178,20 @@ const MultiLevelSlide = ({ children }) => {
     sp.wrapper.style.transition = "";
     sp.slides[byI].style.transition = "";
 
-    if (sp.flickingTime && new Date().getTime() - sp.flickingTime < 1000) {
+    if (sp.flickingTime && new Date().getTime() - sp.flickingTime < 500) {
       if (sp.mtX < 0 && sp.bx !== Math.ceil(tsw)) sp.bx += -100;
       if (sp.mtX > 0 && sp.bx !== 0) sp.bx += 100;
       if (sp.mtY > 0 && sp.by[byI] !== 0) sp.by[byI] += 100;
       if (sp.mtY < 0 && sp.by[byI] !== tavsh) sp.by[byI] += -100;
       sp.mtX = 0; sp.mtY = 0;
       sp.flickingTime = null;
-      sp.wrapper.style.transition = "";
-      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
-      sp.slides[byI].style.transition = "";
-      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+
+      setSlideIndex(p => ({ ...p, c: Math.abs(sp.bx) / 100 }));
+      setSlideColumnIndex(p => {
+        const ta = [...p];
+        ta[byI] = Math.abs(sp.by[byI]) / 100;
+        return ta;
+      });
       return;
     }
 
@@ -150,8 +201,6 @@ const MultiLevelSlide = ({ children }) => {
     else if ((sp.bx - sp.mtX) % 100 >= 30) sp.bx += -100;
     else if ((sp.bx - sp.mtX) % 100 <= -30) sp.bx += 100;
     sp.mtX = 0;
-    sp.wrapper.style.transition = "";
-    sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
 
     sp.mtY = Math.max(tavsh - 10, Math.min(10, sp.by[byI] + sp.mtY));
     if (sp.mtY > 0) sp.by[byI] = 0
@@ -159,17 +208,22 @@ const MultiLevelSlide = ({ children }) => {
     else if ((sp.by[byI] - sp.mtY) % 100 >= 30) sp.by[byI] += -100;
     else if ((sp.by[byI] - sp.mtY) % 100 <= -30) sp.by[byI] += 100;
     sp.mtY = 0;
-    sp.slides[byI].style.transition = "";
-    sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+
+    setSlideIndex(p => ({ ...p, c: Math.abs(sp.bx) / 100 }));
+    setSlideColumnIndex(p => {
+      const ta = [...p];
+      ta[byI] = Math.abs(sp.by[byI]) / 100;
+      return ta;
+    });
   }
 
   function scrollSliding(e) {
-    if (inputbreak) return;
+    if (sp.inputbreak) return;
+    console.log(e.deltaX, e.deltaY);
     const scrollX = e.deltaX === -0 ? 0 : e.deltaX;
     const scrollY = e.deltaY === -0 ? 0 : e.deltaY;
     if (scrollX > 0 && sp.bx !== sp.slides.length * -100 + 100) {
-      sp.bx += -100;
-      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+      handleNav(1)
       sp.inputbreak = true;
       setTimeout(() => {
         sp.inputbreak = false;
@@ -177,62 +231,90 @@ const MultiLevelSlide = ({ children }) => {
       return;
     }
     if (scrollX < 0 && sp.bx !== 0) {
-      sp.bx += 100;
-      sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
+      handleNav(-1)
       sp.inputbreak = true;
       setTimeout(() => {
         sp.inputbreak = false;
-      }, 1000)
+      }, 1000);
       return;
     }
     const byI = Math.abs(sp.bx) / 100;
+    // autoScrollY(true);
     if (scrollY > 0 && sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] !== sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) {
       sp.by[byI] += -100;
-      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
       sp.inputbreak = true;
       setTimeout(() => {
         sp.inputbreak = false;
       }, 1000)
+      setSlideColumnIndex(p => {
+        const ta = [...p];
+        ta[byI] = Math.abs(sp.by[byI]) / 100;
+        return ta;
+      });
       return;
     }
     if (scrollY < 0 && sp.by[byI] !== 0) {
       sp.by[byI] += 100;
-      sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
       sp.inputbreak = true;
       setTimeout(() => {
         sp.inputbreak = false;
-      }, 1000)
+      }, 1000);
+      setSlideColumnIndex(p => {
+        const ta = [...p];
+        ta[byI] = Math.abs(sp.by[byI]) / 100;
+        return ta;
+      });
       return;
     }
   }
 
   function keySliding(e) {
-    if (e.key === "ArrowRight") {
-      if (sp.bx === sp.slides.length * -100 + 100) return;
-      sp.bx += -100;
+    if (e.key === "ArrowRight" && sp.bx !== sp.slides.length * -100 + 100) {
+      handleNav(1)
+      return;
     }
-    if (e.key === "ArrowLeft") {
-      if (sp.bx === 0) return;
-      sp.bx += 100;
+    if (e.key === "ArrowLeft" && sp.bx !== 0) {
+      handleNav(-1)
+      return;
     }
+    // autoScrollY(true);
     const byI = Math.abs(sp.bx) / 100;
-    if (e.key === "ArrowUp") {
-      if (sp.by[byI] === 0) return;
+    if (e.key === "ArrowUp" && sp.by[byI] !== 0) {
       sp.by[byI] += 100;
+      setSlideColumnIndex(p => {
+        const ta = [...p];
+        ta[byI] = Math.abs(sp.by[byI]) / 100;
+        return ta;
+      });
+      return;
     }
-    if (e.key === "ArrowDown") {
-      if (sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] === sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) return;
+    if (e.key === "ArrowDown" && sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] !== sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) {
       sp.by[byI] += -100;
+      setSlideColumnIndex(p => {
+        const ta = [...p];
+        ta[byI] = Math.abs(sp.by[byI]) / 100;
+        return ta;
+      });
+      return;
     }
-    sp.wrapper.style.transform = `translateX(${sp.bx}%)`;
-    sp.slides[byI].style.transform = `translateY(${sp.by[byI]}%)`;
+  }
+
+  function handleNav(go) {
+    // autoScrollY(true);
+    if (go === -1 && sp.bx < 0) sp.bx += 100;
+    else if (sp.bx > sp.slides.length * -100 + 100) sp.bx += -100;
+    setSlideIndex(p => ({ ...p, c: p.c + go }));
   }
 
   return (
     <main ref={mainRef} className={style.slide_container}>
-      <section id="MLS_slide_wrapper" className={style.slide_wrapper}>
+      <ul id="MLS_slide_wrapper" className={style.slide_wrapper}>
         {children}
-      </section>
+      </ul>
+      <nav className={style.navigator}>
+        <button hidden={slideIndex.c === 0} onClick={() => handleNav(-1)}><BsChevronLeft size={40} /></button>
+        <button hidden={slideIndex.c === slideIndex.t} onClick={() => handleNav(1)}><BsChevronRight size={40} /></button>
+      </nav>
     </main>
   )
 }
@@ -246,13 +328,16 @@ export default MultiLevelSlide;
 .slide_container {
   /* sh = slide height */
   --sh: 100vh;
-  /* tws = transition without scroll */
-  --tws: all 1s cubic-bezier(0.2, 0, 0.1, 1);
-  /* tws = transition when scroll */
-  --ts: all 1s cubic-bezier(0, 0, 0, 1);
   height: var(--sh);
   overflow: hidden;
   cursor: pointer;
+  position: relative;
+}
+
+.slide_container ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .slide_container:active {
@@ -261,8 +346,11 @@ export default MultiLevelSlide;
 
 .slide_wrapper {
   display: flex;
-  transition: var(--tws);
   transform: translate3d(0px, 0px, 0px);
+}
+
+.slide_wrapper > li {
+  position: relative;
 }
 
 .slide_wrapper .slide,
@@ -278,10 +366,8 @@ export default MultiLevelSlide;
 }
 
 .slide {
-  transition: var(--tws);
   transform: translate3d(0px, 0px, 0px);
-  list-style: none;
-  padding: 0;
+  position: relative;
 }
 
 .slide_wrapper h1 {
@@ -290,18 +376,50 @@ export default MultiLevelSlide;
   margin: 0;
 }
 
-.silde_item {
-  background-image: var(--bg-web);
-  background-position: top;
-  background-repeat: no-repeat;
-  background-size: cover;
+.navigator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 0;
+  padding: 0 20px;
 }
 
-@media (max-width: 767px) {
-  .silde_item {
-    background-image: var(--bg-mobile);
-  }
+.navigator button {
+  background: none;
+  outline: none;
+  border: none;
+  color: black;
+  cursor: pointer;
 }
+
+.navigator button:first-child {
+  margin-right: auto;
+}
+
+.navigator button:last-child {
+  margin-left: auto;
+}
+
+.indicatorYSlide {
+  position: absolute;
+  bottom: 10%;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.indicatorYSlide span {
+  width: 5px;
+  height: 5px;
+  border: 1px solid white;
+  border-radius: 10px;
+}
+
 ----- end of css of component -----
 
 
@@ -315,21 +433,39 @@ import { Config, postWithToken } from '../helper';
 
 
 const fakehomepage = props => {
-    const { home } = props;
-    const { sections } = home[0];
 
     return (
         <MainLayout {...props} isFooter={false} >
-            <MultiLevelSlide>
-                {sections.map((ss, i) => (
-                    <ul className={`${slide_style.slide} MLS_slide`} key={i}>
-                        {ss.map((s, i) => (
-                            <li key={i} className={`${slide_style.slide_column} MLS_slide_column ${slide_style.silde_item}`} style={{ "--bg-web": `url("${Config.imagePath + s.image_web}")`, "--bg-mobile": `url("${Config.imagePath + s.image}")` }}>
-                            </li>
-                        ))}
-                    </ul>
-                ))}
-            </MultiLevelSlide>
+            <MultiLevelSlide setSci={v => setSci(v)}>
+              {props.home[0].sections.map((ss, i) => (
+                <li key={i}>
+                  <ul className={`${slide_style.slide} MLS_slide`}>
+                    {ss.map((s, j) => (
+                      <li key={j}
+                        className={`${slide_style.slide_column} MLS_slide_column`}>
+                        <div className={style.silde_item}
+                          style={{
+                            "--bg-web": `url("${Config.imagePath + s.image_web}")`,
+                            "--bg-mobile": `url("${Config.imagePath + s.image}")`,
+                            justifyContent: s.styles.position_x === "center" ? "center" : s.styles.position_x === "right" ? "flex-end" : "flex-start",
+                            alignItems: s.styles.position_y === "middle" ? "center" : s.styles.position_y === "bottom" ? "flex-end" : "flex-start",
+                          }}>
+                          <div style={{ alignItems: s.styles.position_x === "center" ? "center" : s.styles.position_x === "right" ? "flex-end" : "flex-start" }} >
+                            <h1 style={{ color: s.styles.color }}>{s.title[curlang]}</h1>
+                            <p style={{ color: s.styles.color }}>{s.sub_title[curlang]}</p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {sci.length && <div className={slide_style.indicatorYSlide}>
+                    {ss.map((_, k) => (
+                      <span key={k} style={{ backgroundColor: sci[i] === k ? "white" : undefined }}></span>
+                    ))}
+                  </div>}
+                </li>
+              ))}
+          </MultiLevelSlide>
         </MainLayout>
     )
 }
