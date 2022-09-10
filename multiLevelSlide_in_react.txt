@@ -44,11 +44,11 @@ const MultiLevelSlide = ({ children, setSci }) => {
     document.body.dataset.home = "true";
 
     sp.wrapper.addEventListener("pointerdown", handlePointerEvents);
-    document.addEventListener("pointermove", handlePointerEvents);
-    document.addEventListener("pointerup", handlePointerEvents);
     sp.wrapper.addEventListener("touchmove", handleTouchEvents);
     sp.wrapper.addEventListener("touchend", handleTouchEvents);
 
+    document.addEventListener("pointermove", handlePointerEvents);
+    document.addEventListener("pointerup", handlePointerEvents);
     document.addEventListener("pointerleave", handlePointerEvents);
     document.addEventListener("contextmenu", endSliding);
     document.addEventListener("keydown", keySliding);
@@ -64,11 +64,11 @@ const MultiLevelSlide = ({ children, setSci }) => {
 
     return () => {
       sp.wrapper.removeEventListener("pointerdown", handlePointerEvents);
-      document.removeEventListener("pointermove", handlePointerEvents);
-      document.removeEventListener("pointerup", handlePointerEvents);
       sp.wrapper.removeEventListener("touchmove", handleTouchEvents);
       sp.wrapper.removeEventListener("touchend", handleTouchEvents);
 
+      document.removeEventListener("pointermove", handlePointerEvents);
+      document.removeEventListener("pointerup", handlePointerEvents);
       document.removeEventListener("pointerleave", handlePointerEvents);
       document.removeEventListener("contextmenu", endSliding);
       document.removeEventListener("keydown", keySliding);
