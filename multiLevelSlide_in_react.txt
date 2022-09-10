@@ -30,6 +30,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
   const { current: sp } = spRef;
   const [slideIndex, setSlideIndex] = useState({ c: 0, t: null });
   const [slideColumnIndex, setSlideColumnIndex] = useState([]);
+  const [wh, setWh] = useState("100vh");
 
   useEffect(() => {
     sp.wrapper = mainRef.current.querySelector("#MLS_slide_wrapper");
@@ -43,8 +44,8 @@ const MultiLevelSlide = ({ children, setSci }) => {
     document.body.dataset.home = "true";
 
     sp.wrapper.addEventListener("pointerdown", handlePointerEvents);
-    sp.wrapper.addEventListener("pointermove", handlePointerEvents);
-    sp.wrapper.addEventListener("pointerup", handlePointerEvents);
+    document.addEventListener("pointermove", handlePointerEvents);
+    document.addEventListener("pointerup", handlePointerEvents);
     sp.wrapper.addEventListener("touchmove", handleTouchEvents);
     sp.wrapper.addEventListener("touchend", handleTouchEvents);
 
@@ -57,10 +58,14 @@ const MultiLevelSlide = ({ children, setSci }) => {
 
     animate();
 
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      setWh(window.innerHeight + "px");
+    }
+
     return () => {
       sp.wrapper.removeEventListener("pointerdown", handlePointerEvents);
-      sp.wrapper.removeEventListener("pointermove", handlePointerEvents);
-      sp.wrapper.removeEventListener("pointerup", handlePointerEvents);
+      document.removeEventListener("pointermove", handlePointerEvents);
+      document.removeEventListener("pointerup", handlePointerEvents);
       sp.wrapper.removeEventListener("touchmove", handleTouchEvents);
       sp.wrapper.removeEventListener("touchend", handleTouchEvents);
 
@@ -86,11 +91,11 @@ const MultiLevelSlide = ({ children, setSci }) => {
       sp.then = sp.now - (sp.delta % sp.interval);
 
       const nx = sp.bx + sp.mtX;
-      sp.sx = sp.sx + (0.05 * (nx - sp.sx));
+      sp.sx = sp.sx + (0.07 * (nx - sp.sx));
       sp.wrapper.style.transform = `translateX(${sp.sx}%)`;
       const byI = Math.abs(sp.bx) / 100;
       const ny = sp.by[byI] + sp.mtY;
-      sp.sy[byI] = sp.sy[byI] + (0.05 * (ny - sp.sy[byI]));
+      sp.sy[byI] = sp.sy[byI] + (0.07 * (ny - sp.sy[byI]));
       sp.slides[byI].style.transform = `translateY(${sp.sy[byI]}%)`;
     }
   }
@@ -162,6 +167,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
     }
     if (sp.sd === "x") sp.mtY = 0;
     else sp.mtX = 0;
+    sp.wrapper.style.pointerEvents = "none";
   }
 
   function endSliding(e, onMobile = false) {
@@ -192,6 +198,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
         ta[byI] = Math.abs(sp.by[byI]) / 100;
         return ta;
       });
+      sp.wrapper.style.pointerEvents = "";
       return;
     }
 
@@ -215,6 +222,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
       ta[byI] = Math.abs(sp.by[byI]) / 100;
       return ta;
     });
+    sp.wrapper.style.pointerEvents = "";
   }
 
   function scrollSliding(e) {
@@ -307,7 +315,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
   }
 
   return (
-    <main ref={mainRef} className={style.slide_container}>
+    <main ref={mainRef} className={style.slide_container} style={{ "--sh": wh }}>
       <ul id="MLS_slide_wrapper" className={style.slide_wrapper}>
         {children}
       </ul>
