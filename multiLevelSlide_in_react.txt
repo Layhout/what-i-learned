@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import style from "./MultiLevelSlide.module.css";
 
-const MultiLevelSlide = ({ children, setSci }) => {
+const MultiLevelSlide = ({ children, setSci, arrorColor }) => {
   const mainRef = useRef();
   const spRef = useRef({ // sp = slide properties
     wrapper: null,
@@ -23,9 +23,10 @@ const MultiLevelSlide = ({ children, setSci }) => {
     scrollYTimer: null,
     now: null,
     then: Date.now(),
-    interval: 1000 / 60, // 1000 / 60 = 60 frame per second
+    interval: 1000 / 60, // 1000 / 60 = 60 frames per second
     delta: null,
     animationId: null,
+    easeSpeed: 0.07
   });
   const { current: sp } = spRef;
   const [slideIndex, setSlideIndex] = useState({ c: 0, t: null });
@@ -60,6 +61,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
 
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
       setWh(window.innerHeight + "px");
+      sp.easeSpeed = 0.1;
     }
 
     return () => {
@@ -91,12 +93,21 @@ const MultiLevelSlide = ({ children, setSci }) => {
       sp.then = sp.now - (sp.delta % sp.interval);
 
       const nx = sp.bx + sp.mtX;
-      sp.sx = sp.sx + (0.07 * (nx - sp.sx));
+      sp.sx = sp.sx + (sp.easeSpeed * (nx - sp.sx));
+      if ((sp.sx > -0.001 && sp.sx < -0) || (sp.sx < 0.001 && sp.sx > 0)) sp.sx = 0;
       sp.wrapper.style.transform = `translateX(${sp.sx}%)`;
       const byI = Math.abs(sp.bx) / 100;
       const ny = sp.by[byI] + sp.mtY;
-      sp.sy[byI] = sp.sy[byI] + (0.07 * (ny - sp.sy[byI]));
-      sp.slides[byI].style.transform = `translateY(${sp.sy[byI]}%)`;
+      sp.sy.forEach((_, i) => {
+        if ((sp.sy[i] > -0.001 && sp.sy[i] < -0) || (sp.sy[i] < 0.001 && sp.sy[i] > 0)) sp.sy[i] = 0;
+        if (byI === i) {
+          sp.sy[byI] = sp.sy[byI] + (sp.easeSpeed * (ny - sp.sy[byI]));
+          sp.slides[byI].style.transform = `translateY(${sp.sy[byI]}%)`;
+          return;
+        }
+        sp.sy[i] = sp.sy[i] + (sp.easeSpeed * (sp.by[i] - sp.sy[i]));
+        sp.slides[i].style.transform = `translateY(${sp.sy[i]}%)`;
+      });
     }
   }
 
@@ -150,7 +161,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
   }
 
   function startSliding(e) {
-    autoScrollY();
+    if (sp.scrollYTimer) autoScrollY();
     sp.click = true;
     sp.startX = (e.clientX / window.innerWidth) * 100;
     sp.startY = (e.clientY / window.innerHeight) * 100;
@@ -172,7 +183,6 @@ const MultiLevelSlide = ({ children, setSci }) => {
 
   function endSliding(e, onMobile = false) {
     if (onMobile && e) return;
-    if (!sp.scrollYTimer) autoScrollY();
     sp.sd = null;
     sp.click = false;
     const byI = Math.abs(sp.bx) / 100;
@@ -185,8 +195,14 @@ const MultiLevelSlide = ({ children, setSci }) => {
     sp.slides[byI].style.transition = "";
 
     if (sp.flickingTime && new Date().getTime() - sp.flickingTime < 500) {
-      if (sp.mtX < 0 && sp.bx !== Math.ceil(tsw)) sp.bx += -100;
-      if (sp.mtX > 0 && sp.bx !== 0) sp.bx += 100;
+      if (sp.mtX < 0 && sp.bx !== Math.ceil(tsw)) {
+        sp.bx += -100;
+        autoScrollY(true);
+      }
+      if (sp.mtX > 0 && sp.bx !== 0) {
+        sp.bx += 100;
+        autoScrollY(true);
+      }
       if (sp.mtY > 0 && sp.by[byI] !== 0) sp.by[byI] += 100;
       if (sp.mtY < 0 && sp.by[byI] !== tavsh) sp.by[byI] += -100;
       sp.mtX = 0; sp.mtY = 0;
@@ -202,11 +218,13 @@ const MultiLevelSlide = ({ children, setSci }) => {
       return;
     }
 
+    let hadScrollX = false;
+
     sp.mtX = Math.max(tsw - 10, Math.min(10, sp.bx + sp.mtX));
-    if (sp.mtX > 0) sp.bx = 0;
-    else if (sp.mtX < sp.slides.length * -100) sp.bx = tsw;
-    else if ((sp.bx - sp.mtX) % 100 >= 30) sp.bx += -100;
-    else if ((sp.bx - sp.mtX) % 100 <= -30) sp.bx += 100;
+    if (sp.mtX > 0) { sp.bx = 0; hadScrollX = true; }
+    else if (sp.mtX < sp.slides.length * -100) { sp.bx = tsw; hadScrollX = true; }
+    else if ((sp.bx - sp.mtX) % 100 >= 30) { sp.bx += -100; hadScrollX = true; }
+    else if ((sp.bx - sp.mtX) % 100 <= -30) { sp.bx += 100; hadScrollX = true; }
     sp.mtX = 0;
 
     sp.mtY = Math.max(tavsh - 10, Math.min(10, sp.by[byI] + sp.mtY));
@@ -223,6 +241,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
       return ta;
     });
     sp.wrapper.style.pointerEvents = "";
+    if (hadScrollX) autoScrollY(true);
   }
 
   function scrollSliding(e) {
@@ -247,7 +266,6 @@ const MultiLevelSlide = ({ children, setSci }) => {
       return;
     }
     const byI = Math.abs(sp.bx) / 100;
-    // autoScrollY(true);
     if (scrollY > 0 && sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] !== sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) {
       sp.by[byI] += -100;
       sp.inputbreak = true;
@@ -259,6 +277,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
         ta[byI] = Math.abs(sp.by[byI]) / 100;
         return ta;
       });
+      if (sp.scrollYTimer) autoScrollY();
       return;
     }
     if (scrollY < 0 && sp.by[byI] !== 0) {
@@ -272,6 +291,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
         ta[byI] = Math.abs(sp.by[byI]) / 100;
         return ta;
       });
+      if (sp.scrollYTimer) autoScrollY();
       return;
     }
   }
@@ -285,7 +305,6 @@ const MultiLevelSlide = ({ children, setSci }) => {
       handleNav(-1)
       return;
     }
-    // autoScrollY(true);
     const byI = Math.abs(sp.bx) / 100;
     if (e.key === "ArrowUp" && sp.by[byI] !== 0) {
       sp.by[byI] += 100;
@@ -294,6 +313,7 @@ const MultiLevelSlide = ({ children, setSci }) => {
         ta[byI] = Math.abs(sp.by[byI]) / 100;
         return ta;
       });
+      if (sp.scrollYTimer) autoScrollY();
       return;
     }
     if (e.key === "ArrowDown" && sp.slides[byI].querySelectorAll(".MLS_slide_column").length && sp.by[byI] !== sp.slides[byI].querySelectorAll(".MLS_slide_column").length * -100 + 100) {
@@ -303,12 +323,13 @@ const MultiLevelSlide = ({ children, setSci }) => {
         ta[byI] = Math.abs(sp.by[byI]) / 100;
         return ta;
       });
+      if (sp.scrollYTimer) autoScrollY();
       return;
     }
   }
 
   function handleNav(go) {
-    // autoScrollY(true);
+    autoScrollY(true);
     if (go === -1 && sp.bx < 0) sp.bx += 100;
     else if (sp.bx > sp.slides.length * -100 + 100) sp.bx += -100;
     setSlideIndex(p => ({ ...p, c: p.c + go }));
@@ -319,15 +340,15 @@ const MultiLevelSlide = ({ children, setSci }) => {
       <ul id="MLS_slide_wrapper" className={style.slide_wrapper}>
         {children}
       </ul>
-      <nav className={style.navigator}>
-        <button hidden={slideIndex.c === 0} onClick={() => handleNav(-1)}><BsChevronLeft size={40} /></button>
-        <button hidden={slideIndex.c === slideIndex.t} onClick={() => handleNav(1)}><BsChevronRight size={40} /></button>
+      <nav className={style.navigator} style={{ "--arror-color": arrorColor(slideIndex.c) || "black" }}>
+        <button hidden={slideIndex.c === 0} onClick={() => handleNav(-1)}><BsChevronLeft /></button>
+        <button hidden={slideIndex.c === slideIndex.t} onClick={() => handleNav(1)}><BsChevronRight /></button>
       </nav>
     </main>
   )
 }
 
-export default MultiLevelSlide;
+export default MultiLevelSlide
 ----- end of component -----
 
 
