@@ -340,7 +340,7 @@ const MultiLevelSlide = ({ children, setSci, arrorColor }) => {
       <ul id="MLS_slide_wrapper" className={style.slide_wrapper}>
         {children}
       </ul>
-      <nav className={style.navigator} style={{ "--arror-color": arrorColor(slideIndex.c) || "black" }}>
+      <nav className={style.navigator} style={{ "--arror-color": arrorColor(slideIndex.c) }}>
         <button hidden={slideIndex.c === 0} onClick={() => handleNav(-1)}><BsChevronLeft /></button>
         <button hidden={slideIndex.c === slideIndex.t} onClick={() => handleNav(1)}><BsChevronRight /></button>
       </nav>
