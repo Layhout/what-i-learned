@@ -1,0 +1,105 @@
+import { Text, StyleSheet, View, Animated, Easing, TouchableOpacity, Alert } from 'react-native'
+import React, { Children, Component } from 'react'
+
+export default class Tabs extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            activeTab: 0,
+            tabTitleInfo: [],
+            tabBodyInfo: null
+        };
+        this.ani = new Animated.Value(0);
+    }
+
+    handlePress = i => {
+        this.setState({ activeTab: i });
+        this.props.onTabChange && this.props.onTabChange(i);
+        Animated.timing(this.ani, {
+            toValue: i,
+            duration: 500,
+            easing: Easing.out(Easing.exp)
+        }).start();
+    }
+
+    render() {
+        const tabPanes = Children.map(this.props.children, c => {
+            if (c.type.name !== "TabPane") return null;
+            return c.props;
+        });
+        if (!tabPanes.length) return null;
+        const aniActiveUnderlineWidth = this.ani.interpolate({
+            inputRange: tabPanes.map((_, i) => i),
+            outputRange: tabPanes.map((_, i) => this.state.tabTitleInfo.sort((a, b) => a.x - b.x)[i]?.width || 0),
+        })
+        const aniActiveUnderlineX = this.ani.interpolate({
+            inputRange: tabPanes.map((_, i) => i),
+            outputRange: tabPanes.map((_, i) => this.state.tabTitleInfo.sort((a, b) => a.x - b.x)[i]?.x || 0),
+        })
+        const aniActiveBodyX = this.ani.interpolate({
+            inputRange: tabPanes.map((_, i) => i),
+            outputRange: tabPanes.map((_, i) => this.state.tabBodyInfo ? -this.state.tabBodyInfo.width * i : 0),
+        })
+
+        return <View style={[this.props.tabStyle, { flex: 1 }]}>
+            <View style={styles.header}>
+                {tabPanes.map((t, i) => (
+                    <TouchableOpacity key={i} onLayout={e => {
+                        if (this.state.tabTitleInfo.length === tabPanes.length) return;
+                        const { x, y, height, width } = e.nativeEvent.layout;
+                        this.setState(p => ({ tabTitleInfo: p.tabTitleInfo.concat({ x, y, height, width }) }))
+                    }} onPress={_ => this.handlePress(i)} style={{ marginRight: 16 }}
+                    >
+                        <Text style={[styles.headerText, this.state.activeTab === i && { color: "black" }]}>
+                            {t.title || ""}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+                <Animated.View style={[
+                    styles.activeUnderline,
+                    { width: aniActiveUnderlineWidth, transform: [{ translateX: aniActiveUnderlineX }] }
+                ]}></Animated.View>
+            </View>
+            <View style={styles.body}>
+                <Animated.View style={[this.props.paneStyle, { flex: 1, flexDirection: "row", transform: [{ translateX: aniActiveBodyX }] }]}>
+                    {tabPanes.map((t, i) => (
+                        <View key={i} style={[t.style, { width: "100%" }]} onLayout={e => {
+                            if (this.state.tabBodyInfo) return;
+                            const { x, y, height, width } = e.nativeEvent.layout;
+                            this.setState({ tabBodyInfo: { x, y, height, width } });
+                        }}>
+                            {t.children}
+                        </View>
+                    ))}
+                </Animated.View>
+            </View>
+        </View>
+    }
+}
+
+const TabPane = ({ title, style }) => ({ title, style });
+Tabs.TabPane = TabPane;
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        position: "relative",
+        paddingHorizontal: 16
+    },
+    headerText: {
+        color: "gray"
+    },
+    activeUnderline: {
+        height: 2,
+        backgroundColor: "black",
+        position: "absolute",
+        top: "100%",
+        left: 0
+    },
+    body: {
+        overflow: "hidden",
+        paddingTop: 16,
+        flex: 1
+    }
+})
