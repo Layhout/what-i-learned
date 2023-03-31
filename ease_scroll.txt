@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        main {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+
+        }
+
+        div {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        div:nth-of-type(1) {
+            background-color: darkmagenta;
+        }
+
+        div:nth-of-type(2) {
+            background-color: darkcyan;
+        }
+
+        div:nth-of-type(3) {
+            background-color: darkblue;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div>
+            <p>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptas magni molestias praesentium placeat
+                quisquam
+                totam modi, error enim, odio, eum doloremque qui commodi esse et excepturi dolorem ipsam officia
+                temporibus?
+            </p>
+        </div>
+        <div>
+            <p>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptas magni molestias praesentium placeat
+                quisquam
+                totam modi, error enim, odio, eum doloremque qui commodi esse et excepturi dolorem ipsam officia
+                temporibus?
+            </p>
+        </div>
+        <div>
+            <p>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptas magni molestias praesentium placeat
+                quisquam
+                totam modi, error enim, odio, eum doloremque qui commodi esse et excepturi dolorem ipsam officia
+                temporibus?
+            </p>
+        </div>
+    </main>
+    <script>
+        const easeSpeed = 0.1;
+        let moveDistance = 0, curScroll = 0;
+
+        document.addEventListener("scroll", () => {
+            moveDistance = window.scrollY
+        })
+
+        const ghostEle = document.createElement("section");
+        ghostEle.style.height = document.querySelector("main").scrollHeight + "px";
+        document.querySelector("main").after(ghostEle);
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            curScroll = curScroll + (easeSpeed * (moveDistance - curScroll));
+            if (curScroll < 0.001) curScroll = 0;
+            document.querySelector("main").style.transform = `translateY(${curScroll * -1}px)`
+        }
+        animate();
+    </script>
+</body>
+
+</html>
