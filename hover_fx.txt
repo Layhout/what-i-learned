@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+
+        main {
+            display: flex;
+            justify-content: center;
+            margin: 5rem 0;
+        }
+
+        ul {
+            background-color: whitesmoke;
+            position: relative;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        ul li {
+            padding: 6px 12px;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        ul::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: lightgray;
+            border-radius: 6px;
+            width: var(--hover-bg-width, 0px);
+            height: var(--hover-bg-height, 0px);
+            transform: translate(var(--hover-bg-x, 0px), var(--hover-bg-y, 0px));
+            opacity: var(--hover-bg-opacity, 0);
+            transition: all 0.3s cubic-bezier(0.72, 0.71, 0.06, 1.18);
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <ul>
+            <li>test</li>
+            <li>testing very long text</li>
+            <li>test medium</li>
+        </ul>
+    </main>
+
+    <script>
+        const ul = document.querySelector("ul"), lis = document.querySelectorAll("ul li");
+
+        ul.style.setProperty("--hover-bg-width", `${lis[0].scrollWidth}px`);
+        ul.style.setProperty("--hover-bg-height", `${lis[0].scrollHeight}px`);
+        ul.style.setProperty("--hover-bg-x", `${lis[0].offsetLeft}px`);
+        ul.style.setProperty("--hover-bg-y", `${lis[0].offsetTop}px`);
+
+        lis.forEach(li => {
+            li.addEventListener("mouseenter", function (e) {
+                ul.style.setProperty("--hover-bg-width", `${this.scrollWidth}px`);
+                ul.style.setProperty("--hover-bg-height", `${this.scrollHeight}px`);
+                ul.style.setProperty("--hover-bg-x", `${this.offsetLeft}px`);
+                ul.style.setProperty("--hover-bg-y", `${this.offsetTop}px`);
+                ul.style.setProperty("--hover-bg-opacity", 1);
+            });
+
+            li.addEventListener("mouseleave", function (e) {
+                ul.style.setProperty("--hover-bg-opacity", 0);
+            });
+        })
+    </script>
+</body>
+
+</html>
