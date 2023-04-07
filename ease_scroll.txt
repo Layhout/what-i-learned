@@ -69,12 +69,8 @@
         </div>
     </main>
     <script>
-        const easeSpeed = 0.1;
-        let moveDistance = 0, curScroll = 0;
-
-        document.addEventListener("scroll", () => {
-            moveDistance = window.scrollY
-        })
+        const easeSpeed = 0.07;
+        let curScroll = 0;
 
         const ghostEle = document.createElement("section");
         ghostEle.style.height = document.querySelector("main").scrollHeight + "px";
@@ -83,7 +79,7 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            curScroll = curScroll + (easeSpeed * (moveDistance - curScroll));
+            curScroll += easeSpeed * (window.scrollY - curScroll);
             if (curScroll < 0.001) curScroll = 0;
             document.querySelector("main").style.transform = `translateY(${curScroll * -1}px)`
         }
