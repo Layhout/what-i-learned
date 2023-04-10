@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        ul {
+            list-style: none;
+            background-color: whitesmoke;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            gap: 8px;
+        }
+
+        ul li {
+            transition: all 0.2s ease;
+            user-select: none;
+            transform: translate(0, 0);
+            padding: 16px 32px;
+            background-color: lightgray;
+            cursor: grab;
+            border-radius: 0.5rem;
+        }
+
+        ul li:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <ul id="draggable">
+            <li>
+                0. Lorem ipsum dolor sit amet.
+            </li>
+            <li>
+                1. Lorem ipsum dolor sit amet.
+            </li>
+            <li>
+                2. Lorem ipsum dolor sit amet.
+            </li>
+            <li>
+                3. Lorem ipsum dolor sit amet.
+            </li>
+            <li>
+                4. Lorem ipsum dolor sit amet.
+            </li>
+            <li>
+                5. Lorem ipsum dolor sit amet.
+            </li>
+        </ul>
+    </main>
+
+    <script>
+        const dContainer = document.querySelector("#draggable");
+        let isPointerMouse = false, startPos = { x: 0, y: 0 }, draggingEle = { c: null, p: null, n: null }, offset = 0, oldY = 0;
+
+        function handleStartDrag(e) {
+            isPointerMouse = true;
+            dContainer.querySelectorAll("li").forEach(li => {
+                li.style.transform = "translate(0,0)";
+            })
+            startPos = {
+                x: e.clientX,
+                y: e.clientY
+            }
+            const prevEle = this.previousElementSibling,
+                nextEle = this.nextElementSibling;
+            offset = this.scrollHeight + (
+                prevEle ?
+                    this.getBoundingClientRect().y - (prevEle.getBoundingClientRect().y + prevEle.getBoundingClientRect().height) :
+                    nextEle.getBoundingClientRect().y - (this.getBoundingClientRect().y + this.getBoundingClientRect().height)
+            );
+            this.dataset.dragging = "true";
+            draggingEle = {
+                c: this,
+                p: prevEle,
+                n: nextEle
+            }
+        }
+
+        document.addEventListener("pointermove", function (e) {
+            if (!isPointerMouse) return;
+            draggingEle.c.style.transition = "none"
+            draggingEle.c.style.transform = `translate(${e.clientX - startPos.x}px, ${e.clientY - startPos.y}px)`;
+            draggingEle.c.style.zIndex = 9999;
+            const dcPosInfo = draggingEle.c.getBoundingClientRect(),
+                dpPosInfo = draggingEle.p?.getBoundingClientRect(),
+                dnPosInfo = draggingEle.n?.getBoundingClientRect(),
+                direction = oldY > e.clientY ? "up" : "down";
+            if (direction === "up" && dpPosInfo && dpPosInfo.height / 2 + dpPosInfo.y > dcPosInfo.y) {
+                const [x, y] = draggingEle.p.style.transform.match(/(\d+.\d+|\d+)|-(\d+.\d+|\d+)/g);
+                draggingEle.p.style.transform = `translate(0px, ${Number(y) + offset}px)`;
+                draggingEle = {
+                    ...draggingEle,
+                    p: draggingEle.p.previousElementSibling?.dataset.dragging ?
+                        draggingEle.c.previousElementSibling : draggingEle.p.previousElementSibling,
+                    n: draggingEle.p
+                }
+            }
+            if (direction === "down" && dnPosInfo && dnPosInfo.height / 2 + dnPosInfo.y < dcPosInfo.y + dcPosInfo.height) {
+                const [x, y] = draggingEle.n.style.transform.match(/(\d+.\d+|\d+)|-(\d+.\d+|\d+)/g);
+                draggingEle.n.style.transform = `translate(0px, ${Number(y) - offset}px)`;
+                draggingEle = {
+                    ...draggingEle,
+                    p: draggingEle.n,
+                    n: draggingEle.n.nextElementSibling?.dataset.dragging ?
+                        draggingEle.c.nextElementSibling : draggingEle.n.nextElementSibling
+                }
+            }
+            oldY = e.clientY;
+        })
+
+        document.addEventListener("pointerup", function () {
+            if (!isPointerMouse) return;
+            isPointerMouse = false;
+            let allItems = [];
+            dContainer.querySelectorAll("li").forEach(li => {
+                li.removeAttribute("data-dragging");
+                li.style.transition = null;
+                li.style.transform = null;
+                li.style.zIndex = null;
+                allItems.push({ ele: li, pos: li.getBoundingClientRect().y });
+            });
+            allItems = allItems.sort((a, b) => a.pos - b.pos);
+            dContainer.innerHTML = "";
+            allItems.forEach(ai => dContainer.appendChild(ai.ele));
+        })
+
+        dContainer.querySelectorAll("li").forEach(li => {
+            li.addEventListener("pointerdown", handleStartDrag);
+        })
+
+        // .match(/(\d+.\d+|\d+)|-(\d+.\d+|\d+)/g)
+    </script>
+</body>
+
+</html>
