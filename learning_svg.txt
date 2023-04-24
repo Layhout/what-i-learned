@@ -9,6 +9,7 @@
     <style>
         svg {
             outline: 1px solid red;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -26,6 +27,20 @@
         <circle cx="310" cy="50" r="3" />
         <circle cx="410" cy="120" r="3" />
     </svg>
+    <svg height="500" width="100%">
+        <path d="M 10 200
+        l 100 100
+        l 100 -200
+        l 100 -50
+        l 100 70
+        " stroke="black" fill="none" />
+        <circle cx="10" cy="200" r="3" />
+        <circle cx="110" cy="300" r="3" />
+        <circle cx="210" cy="100" r="3" />
+        <circle cx="310" cy="50" r="3" />
+        <circle cx="410" cy="120" r="3" />
+    </svg>
+
     <!--
         formula for curve lines
         c {curve value} 0, {curve value} {dynamic points}, {space between points} {dynamic points}
