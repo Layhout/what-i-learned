@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
@@ -11,265 +10,76 @@
             padding: 0;
             margin: 0;
             box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
-        main {
-            height: 100vh;
-            background-color: darkcyan;
-            display: grid;
-            place-content: center;
-
-        }
-
-        section {
-            /* animation: text_visible 1s ease; */
-            animation: shaking 8s ease infinite;
-            position: relative;
-        }
-
-        /* section::after {
-            content: "";
-            position: absolute;
-            top: -5px;
-            left: -5px;
-            right: -5px;
-            bottom: -5px;
-            background-color: darkgoldenrod;
-            animation: e3 2s ease forwards;
-        } */
-
-        section div {
-            color: white;
+        .title {
             text-align: center;
-            font-size: 2rem;
-            text-transform: uppercase;
-            /* animation: shaking 8s ease infinite; */
-            /* opacity: 0;
-            animation: text_visible 0.0001s ease 1s forwards; */
-            /* animation: e1 2s ease, blur_out 2s ease 5s forwards; */
-            /* animation: e2 2s ease forwards, blur_out 2s ease 5s forwards; */
-            /* animation: e4 2s ease, blur_out 2s ease 5s forwards; */
-            /* for e5 & e6 */
-            /* overflow: hidden; */
-            /* animation: blur_out 2s ease 5s forwards; */
-            opacity: 0;
-            animation: e8 2s ease -0.8s forwards, blur_out 2s ease 5s forwards;
+            margin-top: 16px;
         }
 
-        /* section div p {
-            animation: e5 2s ease;
-        } */
-
-        section div p:first-child {
-            /* animation: e6_t 2s ease; */
-            /* opacity: 0; */
-            /* animation: e7 2s ease forwards; */
+        .container {
+            width: 100%;
+            margin: 16px auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
         }
 
-        section div p:last-child {
-            /* animation: e6_b 2s ease; */
-            /* opacity: 0; */
-            /* animation: e7 2s ease 1s forwards; */
-        }
-
-        @keyframes blur_out {
-            0% {
-                filter: blur(0);
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            70% {
-                opacity: 0;
-            }
-
-            100% {
-                filter: blur(10px);
-                opacity: 0;
-                transform: scale(2);
-            }
-        }
-
-        @keyframes shaking {
-            0% {
-                transform: translate(2px, 2px) rotate(0deg);
-            }
-
-            10% {
-                transform: translate(-2px, -3px) rotate(-2deg);
-            }
-
-            20% {
-                transform: translate(-4px, 1px) rotate(2deg);
-            }
-
-            30% {
-                transform: translate(4px, 3px) rotate(0deg);
-            }
-
-            40% {
-                transform: translate(2px, -2px) rotate(2deg);
-            }
-
-            50% {
-                transform: translate(-2px, 3px) rotate(-2deg);
-            }
-
-            60% {
-                transform: translate(-4px, 2px) rotate(0deg);
-            }
-
-            70% {
-                transform: translate(4px, 2px) rotate(-2deg);
-            }
-
-            80% {
-                transform: translate(-2px, -2px) rotate(2deg);
-            }
-
-            90% {
-                transform: translate(2px, 3px) rotate(-2deg);
-            }
-
-            100% {
-                transform: translate(2px, 2px) rotate(0deg);
-            }
-        }
-
-        @keyframes text_visible {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes e1 {
-            from {
-                transform: translateX(-50%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes e2 {
-            from {
-                transform: scale(0.5);
-                filter: blur(10px);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                filter: blur(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes e3 {
-            0% {
-                left: 0;
-                width: 0%;
-            }
-
-            50% {
-                left: 0;
-                width: 100%;
-            }
-
-            100% {
-                left: 100%;
-                width: 0%;
-            }
-        }
-
-        @keyframes e4 {
-            from {
-                transform: rotateX(90deg);
-            }
-
-            to {
-                transform: rotateX(0deg);
-            }
-        }
-
-        @keyframes e5 {
-            from {
-                transform: translateY(100px);
-            }
-
-            to {
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes e6_t {
-            from {
-                transform: translateX(-100%);
-            }
-
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes e6_b {
-            from {
-                transform: translateX(100%);
-            }
-
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes e7 {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .testing {
-            width: 200px;
+        .comp_item {
+            border: 1px solid lightgray;
+            border-radius: 8px;
             overflow: hidden;
         }
 
-        @keyframes smoke {
-            from {
-                transform: translateX(0);
-            }
+        .comp_item iframe {
+            width: 100%;
+            height: 200px;
+        }
 
-            to {
-                transform: translateX(-1600px);
+        .comp_item .comp_des {
+            padding: 8px;
+            border-top: 1px solid lightgray;
+        }
+
+        .comp_item .comp_des>div {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        /* sm */
+        @media (min-width: 640px) {
+            .container {
+                max-width: 640px
             }
         }
 
-        .testing img {
-            animation: smoke 0.3s steps(8) forwards;
+        /* md */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px
+            }
         }
 
-        @keyframes e8 {
-            0% {
-                transform: rotateZ(90deg);
+        /* lg */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px
             }
+        }
 
-            50% {
-                opacity: 0;
+        /* xl */
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px
             }
+        }
 
-            100% {
-                transform: translateZ(0);
-                opacity: 1;
+        /* 2xl */
+        @media (min-width: 1536px) {
+            .container {
+                max-width: 1536px
             }
         }
     </style>
@@ -277,15 +87,72 @@
 
 <body>
     <main>
-        <section>
-            <div>
-                <p>we got ups and downs testing123</p>
-                <p>i cannot lie.</p>
+        <h1 class="title">What i learn</h1>
+        <div class="container">
+            <div class="comp_item">
+                <iframe src="./switch.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Switch Without Javascript.</h4>
+                    <div>
+                        <a href="./switch.html">Visit -></a>
+                    </div>
+                </div>
             </div>
-        </section>
-        <!-- <div class="testing">
-            <img src="public/smokeExplosion.png" alt="">
-        </div> -->
+            <div class="comp_item">
+                <iframe src="./slide.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Fullscreen Slide.</h4>
+                    <div>
+                        <a href="./slide.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./hover_fx.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Tailing Background Hover fx.</h4>
+                    <div>
+                        <a href="./hover_fx.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./drag_and_drop_horizontal.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Drag and Drop.</h4>
+                    <div>
+                        <a href="./drag_and_drop_horizontal.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./infinite_slide.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Infinite Slide.</h4>
+                    <div>
+                        <a href="./infinite_slide.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./ease_scroll.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Ease Scrolling.</h4>
+                    <div>
+                        <a href="./ease_scroll.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./element_follow_cursor.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Drag Element.</h4>
+                    <div>
+                        <a href="./element_follow_cursor.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 </body>
 

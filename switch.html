@@ -20,7 +20,7 @@
             place-content: center;
         }
 
-        button {
+        .switch_wrapper {
             background-color: lightgray;
             border: none;
             outline: none;
@@ -47,11 +47,12 @@
             transition: all .5s ease;
         }
 
-        button[data-switch="true"] {
+
+        #switch_controller:checked+.switch_wrapper {
             background-color: lightskyblue;
         }
 
-        button[data-switch="true"] .switch_handle {
+        #switch_controller:checked+.switch_wrapper .switch_handle {
             left: calc(100% - 20px);
         }
     </style>
@@ -59,19 +60,13 @@
 
 <body>
     <main>
-        <button data-switch="false" onclick="handleSwitch(this)">
+        <input type="checkbox" hidden id="switch_controller" name="switch_controller">
+        <label for="switch_controller" class="switch_wrapper">
             <div>
                 <div class="switch_handle"></div>
             </div>
-        </button>
+        </label>
     </main>
-
-    <script>
-        function handleSwitch(el) {
-            if (el.dataset.switch === "false") el.dataset.switch = "true";
-            else el.dataset.switch = "false";
-        }
-    </script>
 </body>
 
 </html>
