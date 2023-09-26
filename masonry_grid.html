@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .masonry_wrapper {
+            display: grid;
+            grid-template-columns: repeat(var(--row-count, 4), 1fr);
+            gap: var(--gap-space, 8px);
+        }
+
+        .masonry_wrapper>* {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-space, 8px);
+        }
+
+        .masonry_wrapper>*>* {
+            font-size: 32px;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        /* sm */
+        @media (min-width: 640px) {
+            .container {
+                max-width: 640px
+            }
+        }
+
+        /* md */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px
+            }
+        }
+
+        /* lg */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px
+            }
+        }
+
+        /* xl */
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px
+            }
+        }
+
+        /* 2xl */
+        @media (min-width: 1536px) {
+            .container {
+                max-width: 1536px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container masonry_wrapper" style="--gap-space: 16px">
+
+    </main>
+
+    <script>
+        const ma_warpper = document.querySelector(".masonry_wrapper");
+
+        const test_ele = Array.from({ length: 50 }, (_, i) => `<div style="height: ${randMinMax(100, 300)}px; background-color: rgb(${randMinMax(0, 255)},${randMinMax(0, 255)},${randMinMax(0, 255)})">${i + 1}</div>`);
+        const breakpoint = [
+            {
+                width: 1536,
+                row: 5
+            },
+            {
+                width: 1280,
+                row: 4
+            },
+            {
+                width: 1024,
+                row: 3
+            },
+            {
+                width: 768,
+                row: 2
+            },
+            {
+                width: 640,
+                row: 2
+            },
+        ];
+
+        breakpoint.sort((a, b) => a.width - b.width);
+
+        let row_count = 5;
+
+        window.addEventListener("resize", checkBreakpoint);
+
+        function checkBreakpoint() {
+            const foundBreakpoint = breakpoint.find(bp => bp.width > this.innerWidth) || { row: 5 };
+            if (foundBreakpoint && row_count !== foundBreakpoint.row) {
+                row_count = foundBreakpoint.row;
+                fillGrid();
+            }
+        }
+
+        function fillGrid() {
+            const rows = new Array(row_count).fill("<div>");
+
+            for (let i = 0, j = 0; i < test_ele.length; i++, j++) {
+                if (j === row_count) j = 0;
+                rows[j] += test_ele[i];
+            }
+
+            ma_warpper.style.setProperty("--row-count", row_count)
+            ma_warpper.innerHTML = rows.map(r => r += "</div>").join("");
+        }
+
+        function randMinMax(min, max) {
+            return Math.round((Math.random() * (max - min)) + min)
+        }
+
+        fillGrid();
+        checkBreakpoint();
+    </script>
+</body>
+
+</html>

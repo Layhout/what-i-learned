@@ -18,12 +18,18 @@
             margin-top: 16px;
         }
 
+        .title+p {
+            text-align: center;
+            margin-top: 16px;
+        }
+
         .container {
             width: 100%;
             margin: 16px auto;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(1, 1fr);
             gap: 12px;
+            padding: 0 8px;
         }
 
         .comp_item {
@@ -34,7 +40,7 @@
 
         .comp_item iframe {
             width: 100%;
-            height: 200px;
+            height: 300px;
         }
 
         .comp_item .comp_des {
@@ -51,28 +57,32 @@
         /* sm */
         @media (min-width: 640px) {
             .container {
-                max-width: 640px
+                max-width: 640px;
+                grid-template-columns: repeat(1, 1fr);
             }
         }
 
         /* md */
         @media (min-width: 768px) {
             .container {
-                max-width: 768px
+                max-width: 768px;
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
         /* lg */
         @media (min-width: 1024px) {
             .container {
-                max-width: 1024px
+                max-width: 1024px;
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
         /* xl */
         @media (min-width: 1280px) {
             .container {
-                max-width: 1280px
+                max-width: 1280px;
+                grid-template-columns: repeat(4, 1fr);
             }
         }
 
@@ -88,6 +98,10 @@
 <body>
     <main>
         <h1 class="title">What i learn</h1>
+        <p>
+            I studied and built these components in my free time. These components are built using only HTML, CSS and
+            Javascript. Check source code on my <a href="https://github.com/Layhout/what-i-learned">Github</a>.
+        </p>
         <div class="container">
             <div class="comp_item">
                 <iframe src="./switch.html" frameborder="0"></iframe>
@@ -149,6 +163,25 @@
                     <h4>Drag Element.</h4>
                     <div>
                         <a href="./element_follow_cursor.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comp_item">
+                <iframe src="./tilting_hover_fx.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Tilting When Hover.</h4>
+                    <div>
+                        <a href="./tilting_hover_fx.html">Visit -></a>
+                    </div>
+                </div>
+            </div>
+            <div class="comp_item">
+                <iframe src="./masonry_grid.html" frameborder="0"></iframe>
+                <div class="comp_des">
+                    <h4>Masonry.</h4>
+                    <div>
+                        <a href="./masonry_grid.html">Visit -></a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        main>div {
+            width: 300px;
+        }
+
+        main>div>div {
+            perspective: 1000px;
+            transition: all 0.5s;
+        }
+
+        main>div>div:hover {
+            transform: scale(1.05);
+        }
+
+        img {
+            width: 100%;
+            transform: rotateY(0deg) rotateX(0deg);
+            transition: transform 0.1s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div>
+            <div class="tilting">
+                <img src="https://thumbnails.production.thenounproject.com/q2ctSc9UxZVtgwpgVrUfx6NsKuI=/fit-in/1000x1000/photos.production.thenounproject.com/photos/D814005E-7D22-44DD-BE5E-01DDA94BDEDC.jpg"
+                    alt="">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const titlWrapper = document.querySelector(".tilting");
+        const titlObj = titlWrapper.querySelector(":scope > *");
+        const tilt_strength = 0.07
+
+        titlWrapper.addEventListener("mousemove", function (e) {
+            const mouseX = e.offsetX;
+            const mouseY = e.offsetY;
+            const halfX = this.scrollWidth / 2;
+            const halfY = this.scrollHeight / 2;
+            titlObj.style.transform = `rotateY(${(halfX - mouseX) * -tilt_strength}deg) rotateX(${(halfY - mouseY) * tilt_strength}deg)`;
+        })
+
+        titlWrapper.addEventListener("mouseleave", function () {
+            titlObj.removeAttribute("style");
+        })
+    </script>
+</body>
+
+</html>
