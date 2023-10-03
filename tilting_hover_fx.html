@@ -23,18 +23,18 @@
             width: 300px;
         }
 
-        main>div>div {
-            perspective: 1000px;
+        .tilting {
+            /* perspective: 1000px; */
             transition: all 0.5s;
         }
 
-        main>div>div:hover {
+        .tilting:hover {
             transform: scale(1.05);
         }
 
         img {
             width: 100%;
-            transform: rotateY(0deg) rotateX(0deg);
+            transform: perspective(800px) rotateY(0deg) rotateX(0deg);
             transition: transform 0.1s ease;
         }
     </style>
@@ -53,14 +53,14 @@
     <script>
         const titlWrapper = document.querySelector(".tilting");
         const titlObj = titlWrapper.querySelector(":scope > *");
-        const tilt_strength = 0.07
+        const tilt_strength = 0.1
 
         titlWrapper.addEventListener("mousemove", function (e) {
             const mouseX = e.offsetX;
             const mouseY = e.offsetY;
             const halfX = this.scrollWidth / 2;
             const halfY = this.scrollHeight / 2;
-            titlObj.style.transform = `rotateY(${(halfX - mouseX) * -tilt_strength}deg) rotateX(${(halfY - mouseY) * tilt_strength}deg)`;
+            titlObj.style.transform = `perspective(800px) rotateY(${(halfX - mouseX) * -tilt_strength}deg) rotateX(${(halfY - mouseY) * tilt_strength}deg)`;
         })
 
         titlWrapper.addEventListener("mouseleave", function () {
