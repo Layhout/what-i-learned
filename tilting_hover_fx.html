@@ -23,48 +23,85 @@
             width: 300px;
         }
 
-        .tilting {
-            /* perspective: 1000px; */
+        .tilting-wrapper {
+            transform: perspective(800px);
             transition: all 0.5s;
         }
 
-        .tilting:hover {
+        .tilting-wrapper:hover {
             transform: scale(1.1);
+        }
+
+        .tilting-body {
+            transform: rotateY(0deg) rotateX(0deg);
+            transition: transform 0.1s ease;
+            position: relative;
         }
 
         img {
             width: 100%;
-            transform: perspective(800px) rotateY(0deg) rotateX(0deg);
+
+        }
+
+        .text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            display: flex;
+            /* justify-content: center;
+            align-items: center; */
+        }
+
+        .text p {
+            transform: translateX(0) translateY(0);
             transition: transform 0.1s ease;
+            font-weight: bold;
+            color: black;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 1.5rem;
         }
     </style>
 </head>
 
 <body>
     <main>
-        <div>
-            <div class="tilting">
+        <div class="tilting-wrapper">
+            <div class="tilting-body">
                 <img src="https://thumbnails.production.thenounproject.com/q2ctSc9UxZVtgwpgVrUfx6NsKuI=/fit-in/1000x1000/photos.production.thenounproject.com/photos/D814005E-7D22-44DD-BE5E-01DDA94BDEDC.jpg"
                     alt="">
+                <div class="text">
+                    <p>Lorem ipsum dolor sit</p>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        const titlWrapper = document.querySelector(".tilting");
-        const titlObj = titlWrapper.querySelector(":scope > *");
-        const tilt_strength = 0.1
+        const titlWrapper = document.querySelector(".tilting-wrapper");
+        const titlBody = titlWrapper.querySelector(".tilting-body");
+        const tilt_strength = 0.1;
+        const tilt_texts = document.querySelectorAll(".text > *");
 
         titlWrapper.addEventListener("mousemove", function (e) {
-            const mouseX = e.offsetX;
-            const mouseY = e.offsetY;
+            const selfProps = this.getBoundingClientRect();
+            const mouseX = e.clientX - selfProps.x;
+            const mouseY = e.clientY - selfProps.y;
             const halfX = this.scrollWidth / 2;
             const halfY = this.scrollHeight / 2;
-            titlObj.style.transform = `perspective(800px) rotateY(${(halfX - mouseX) * -tilt_strength}deg) rotateX(${(halfY - mouseY) * tilt_strength}deg)`;
+            titlBody.style.transform = `perspective(800px) rotateY(${(halfX - mouseX) * -tilt_strength}deg) rotateX(${(halfY - mouseY) * tilt_strength}deg)`;
+            tilt_texts.forEach(t => {
+                t.style.transform = `scale(1.1) translateX(${((mouseX / this.scrollWidth) - 0.5) * 8}%) translateY(${((mouseY / this.scrollHeight) - 0.5) * 8}%)`;
+            })
         })
 
         titlWrapper.addEventListener("mouseleave", function () {
-            titlObj.removeAttribute("style");
+            titlBody.removeAttribute("style");
+            tilt_texts.forEach(t => {
+                t.removeAttribute("style");
+            })
         })
     </script>
 </body>

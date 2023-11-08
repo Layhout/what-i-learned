@@ -79,9 +79,9 @@
 
             window.addEventListener("wheel", function (e) {
                 e.preventDefault();
-                to = from + e.deltaY;
+                to = from + (e.deltaY * 2);
                 to = Math.max(0, Math.min(document.documentElement.scrollHeight - window.innerHeight, to));
-            }, { passive: false })
+            }, { passive: false });
 
             function animate() {
                 requestAnimationFrame(animate);
